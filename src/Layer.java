@@ -25,6 +25,11 @@ public class Layer {
         }
     }
 
+    /**
+     * Returns an array of the activations of the neurons in the layer.
+     * 
+     * @return Array of activations of the neurons in the layer.
+     */
     public double[] getLayerActivations() {
         // Creates an array to store activations for the neurons in the layer.
         double[] activations = new double[neurons.length];
@@ -35,5 +40,14 @@ public class Layer {
         }
 
         return activations;
+    }
+
+    /**
+     * Getter for the amount of neurons in a layer.
+     * 
+     * @return The amount of neurons in a layer
+     */
+    public int size() {
+        return neurons.length;
     }
 }
