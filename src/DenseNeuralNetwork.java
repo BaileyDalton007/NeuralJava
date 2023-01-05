@@ -36,4 +36,22 @@ public class DenseNeuralNetwork {
             layerWeights[i] = new WeightMatrix(layerArray[i + 1].size(), layerArray[i].size());
         }
     }
+
+    /**
+     * Forward propagation algorithm calculating activations through the network.
+     * 
+     * @param input The input array to the network, should be the same size as the
+     *              input layer
+     * @return The output of the network propagated from the input
+     * @throws IncompatibleInputException Thrown if the size of the input array is
+     *                                    not the same as the input layer.
+     */
+    public double[] ForwardPropagation(double[] input) throws IncompatibleInputException {
+        // Checks that the input array is the same size as the input layer.
+        if (input.length != layerArray[0].size())
+            throw new IncompatibleInputException(
+                    "Input size does not match size of first layer. Make sure that the input layer has the same amount of neurons as the input array.");
+
+        return null;
+    }
 }
