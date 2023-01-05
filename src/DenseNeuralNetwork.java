@@ -52,6 +52,34 @@ public class DenseNeuralNetwork {
             throw new IncompatibleInputException(
                     "Input size does not match size of first layer. Make sure that the input layer has the same amount of neurons as the input array.");
 
+        // Feeds the input to the first layer.
+        layerArray[0].input(input);
+
+        // For each layer in the network, for each neuron in that layer, calculate the
+        // activation by taking the weighted sum with all the previous layer's neurons.
+        for (int layerIndex = 1; layerIndex < layerArray.length; layerIndex++) {
+
+            // Stores the current layer being propagated.
+            Layer currLayer = layerArray[layerIndex];
+
+            // Stores the previous layer for calculating the weighted sum for the current
+            // layer.
+            Layer previousLayer = layerArray[layerIndex - 1];
+
+            for (int neuronIndex = 0; neuronIndex < currLayer.size(); neuronIndex++) {
+
+                // Stores the weighted sum that will become the input for the current neuron.
+                double weightedSum = 0.0;
+
+                // Iterates through neurons in the previous layer, multiplies each value by its
+                // weight, then adds to the sum total.
+                for (int i = 0; i < previousLayer.size(); i++) {
+                    //
+                }
+            }
+
+        }
+
         return null;
     }
 }

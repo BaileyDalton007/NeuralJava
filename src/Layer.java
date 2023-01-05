@@ -50,4 +50,23 @@ public class Layer {
     public int size() {
         return neurons.length;
     }
+
+    /**
+     * Inputs an array of inputs to the layer of neurons.
+     * 
+     * @param input Array of inputs
+     * @throws IncompatibleInputException Thrown if the size of input does not match
+     *                                    the size of the layer.
+     */
+    public void input(double[] input) throws IncompatibleInputException {
+        // Checks that the input is the same size as the layer.
+        if (input.length != this.size())
+            throw new IncompatibleInputException(
+                    "Input size of (" + input.length + ") does not match size of layer (" + this.size() + ").");
+
+        // Iterates through neurons and sets the input for each neuron.
+        for (int i = 0; i < this.size(); i++) {
+            neurons[i].setInput(input[i]);
+        }
+    }
 }
