@@ -1,6 +1,3 @@
-import java.lang.reflect.Method;
-import java.util.function.Function;
-
 /**
  * Class object for a deep learning neuron.
  * 
@@ -16,7 +13,7 @@ public class Neuron {
 
     // The non-linear activation function applied to the input to this neuron to
     // determine the activation of the neuron.
-    private Function<Double, Double> activationFunction;
+    private ActivationFunction activationFunction;
 
     /**
      * The constructor for a neuron instance.
@@ -24,7 +21,7 @@ public class Neuron {
      * @param activationFunction The non-linear activation function that should be
      *                           used to determine the activation of this neuron
      */
-    public Neuron(Function<Double, Double> activationFunction) {
+    public Neuron(ActivationFunction activationFunction) {
         this.activationFunction = activationFunction;
     }
 
