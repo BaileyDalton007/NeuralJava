@@ -1,3 +1,5 @@
+package activationfunctions;
+
 import java.util.function.Function;
 
 /**

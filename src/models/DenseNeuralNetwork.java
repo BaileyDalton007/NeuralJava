@@ -1,3 +1,12 @@
+package models;
+
+import exceptions.IncompatibleInputException;
+import exceptions.NetworkTooSmallException;
+
+import models.components.Layer;
+import models.components.Neuron;
+import models.components.WeightMatrix;
+
 /**
  * A class for Dense Neural Networks where every neuron in a layer is connected
  * to every neuron in the previous layer.

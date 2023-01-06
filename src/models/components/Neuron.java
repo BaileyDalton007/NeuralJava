@@ -1,3 +1,7 @@
+package models.components;
+
+import activationfunctions.ActivationFunction;
+
 /**
  * Class object for a deep learning neuron.
  * 

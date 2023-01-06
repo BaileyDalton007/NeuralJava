@@ -1,3 +1,5 @@
+package activationfunctions;
+
 /**
  * Sigmoid activation function for deep learning neurons.
  * 

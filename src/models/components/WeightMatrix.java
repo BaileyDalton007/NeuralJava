@@ -1,3 +1,5 @@
+package models.components;
+
 /**
  * Class for a matrix specifically for representing the weights between a layer
  * and the previous layer.

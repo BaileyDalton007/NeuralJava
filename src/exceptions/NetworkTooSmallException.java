@@ -1,3 +1,5 @@
+package exceptions;
+
 /**
  * Exception for when a Network is initialized with too few layers.
  * 

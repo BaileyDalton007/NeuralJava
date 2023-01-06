@@ -1,3 +1,8 @@
+package models.components;
+
+import activationfunctions.ActivationFunction;
+import exceptions.IncompatibleInputException;
+
 /**
  * Class for layers that make up neural networks.
  * 
