@@ -1,8 +1,7 @@
-package com.github.baileydalton007;
+package com.github.baileydalton007.models;
 
 import org.junit.jupiter.api.Test;
 
-import com.github.baileydalton007.models.DenseNeuralNetwork;
 import com.github.baileydalton007.models.components.Layer;
 import com.github.baileydalton007.activationfunctions.*;;
 
