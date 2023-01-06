@@ -1,0 +1,14 @@
+{
+    "java.project.sourcePaths": ["src"],
+    "java.project.outputPath": "bin",
+    "java.project.resourceFilters": [
+        "node_modules",
+        "\\.git",
+        "Maintest.java"
+    ],
+    "java.project.referencedLibraries": {
+        "include": [
+            "lib/**/*.jar"
+        ]
+    }
+}
