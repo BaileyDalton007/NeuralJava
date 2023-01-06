@@ -1,7 +1,10 @@
 package com.github.baileydalton007.models.components;
 
 import com.github.baileydalton007.activationfunctions.ActivationFunction;
+import com.github.baileydalton007.activationfunctions.ReLUFunction;
+import com.github.baileydalton007.activationfunctions.SigmoidFunction;
 import com.github.baileydalton007.exceptions.IncompatibleInputException;
+import com.github.baileydalton007.exceptions.UnknownActivationFunction;
 
 /**
  * Class for layers that make up neural networks.
@@ -18,11 +21,25 @@ public class Layer {
      * @param numNeurons         The number of neurons that should make up the
      *                           layer
      * @param activationFunction The activation function that each neuron in the
-     *                           layer should use.
+     *                           layer should use. For Rectified Linear Unit use
+     *                           "relu", for sigmoid use "sigmoid"
      */
-    public Layer(int numNeurons, ActivationFunction activationFunction) {
+    public Layer(int numNeurons, String activationFunctionString) {
         // Creates an array to store the neurons in the layer.
         neurons = new Neuron[numNeurons];
+
+        // Sets the activation function based on the input string.
+        ActivationFunction activationFunction;
+        if (activationFunctionString.toLowerCase() == "relu")
+            activationFunction = new ReLUFunction();
+
+        else if (activationFunctionString.toLowerCase() == "sigmoid")
+            activationFunction = new SigmoidFunction();
+
+        else
+            // If the function is unknown, throw an exception.
+            throw new UnknownActivationFunction(activationFunctionString
+                    + " is an unknown activation function string, try one listed in the documentation.");
 
         // Creates and stores neurons in the array.
         for (int i = 0; i < numNeurons; i++) {
