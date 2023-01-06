@@ -21,7 +21,7 @@ public class Neuron {
      * @param activationFunction The non-linear activation function that should be
      *                           used to determine the activation of this neuron
      */
-    public Neuron(ActivationFunction activationFunction) {
+    protected Neuron(ActivationFunction activationFunction) {
         this.activationFunction = activationFunction;
     }
 
