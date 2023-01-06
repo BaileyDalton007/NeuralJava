@@ -5,7 +5,7 @@ package com.github.baileydalton007.exceptions;
  * 
  * @author Bailey Dalton
  */
-public class NetworkTooSmallException extends Exception {
+public class NetworkTooSmallException extends RuntimeException {
     /**
      * Constructor for a NetworkTooSmallException.
      */

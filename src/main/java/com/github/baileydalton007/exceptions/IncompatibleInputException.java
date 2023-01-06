@@ -6,7 +6,7 @@ package com.github.baileydalton007.exceptions;
  * 
  * @author Bailey Dalton
  */
-public class IncompatibleInputException extends Exception {
+public class IncompatibleInputException extends RuntimeException {
     /**
      * Constructor for a IncompatibleInputException.
      */
