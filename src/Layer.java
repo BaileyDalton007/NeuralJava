@@ -36,7 +36,7 @@ public class Layer {
 
         // Iterates through neurons to calculate and store the activation for each.
         for (int i = 0; i < neurons.length; i++) {
-            activations[i] = neurons[i].getActivation();
+            activations[i] = getNeuron(i).getActivation();
         }
 
         return activations;
@@ -66,7 +66,17 @@ public class Layer {
 
         // Iterates through neurons and sets the input for each neuron.
         for (int i = 0; i < this.size(); i++) {
-            neurons[i].setInput(input[i]);
+            getNeuron(i).setInput(input[i]);
         }
+    }
+
+    /**
+     * Returns the neuron in a layer at a given index.
+     * 
+     * @param index The index of the neuron that should be accessed
+     * @return The neuron in the layer at the passed in index
+     */
+    public Neuron getNeuron(int index) {
+        return neurons[index];
     }
 }

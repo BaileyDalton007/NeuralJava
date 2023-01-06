@@ -71,15 +71,34 @@ public class DenseNeuralNetwork {
                 // Stores the weighted sum that will become the input for the current neuron.
                 double weightedSum = 0.0;
 
+                // Stores the current neuron to which the input is being calculated.
+                Neuron currNeuron = currLayer.getNeuron(neuronIndex);
+
                 // Iterates through neurons in the previous layer, multiplies each value by its
                 // weight, then adds to the sum total.
                 for (int i = 0; i < previousLayer.size(); i++) {
-                    //
+
+                    weightedSum += previousLayer.getNeuron(i).getActivation() // The previous neuron's activation.
+                            * this.layerWeights[layerIndex - 1].getMatrix()[neuronIndex][i]; // The weight connecting
+                                                                                             // the current neuron to
+                                                                                             // the previous neuron.
                 }
+
+                currNeuron.setInput(weightedSum);
             }
 
         }
 
-        return null;
+        return getOutput();
+    }
+
+    /**
+     * Gets the output of the network, the activations of the last layer in the
+     * network.
+     * 
+     * @return An array of values representing the activations of the output layer
+     */
+    private double[] getOutput() {
+        return layerArray[layerArray.length - 1].getLayerActivations();
     }
 }
