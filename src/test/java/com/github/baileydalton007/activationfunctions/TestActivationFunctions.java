@@ -4,6 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * JUnit class for testing activation functions.
+ * 
+ * @author Bailey Dalton
+ */
 public class TestActivationFunctions {
 
     /**
@@ -41,6 +46,30 @@ public class TestActivationFunctions {
         // Tests large inputs that are rounded to 0 or 1.
         assertEquals(1.000, roundNPlaces(sigmoid.apply(100.0), 3));
         assertEquals(0.000, roundNPlaces(sigmoid.apply(-100.0), 3));
+
+    }
+
+    /**
+     * Unit test for the Rectified Linear Unit (ReLU) activation function.
+     * 
+     * Tests 0 and a few positive and negative values.
+     */
+    @Test
+    public void testReLUFunction() {
+        ReLUFunction relu = new ReLUFunction();
+
+        // Tests 0.
+        assertEquals(0.0, relu.apply(0.0));
+
+        // Tests positive values.
+        assertEquals(0.5, relu.apply(0.5));
+        assertEquals(1.0, relu.apply(1.0));
+        assertEquals(10.0, relu.apply(10.0));
+
+        // Tests negative values.
+        assertEquals(0.0, relu.apply(-0.5));
+        assertEquals(0.0, relu.apply(-1.0));
+        assertEquals(0.0, relu.apply(-10.0));
 
     }
 
