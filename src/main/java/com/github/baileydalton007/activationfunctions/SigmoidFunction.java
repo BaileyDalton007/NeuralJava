@@ -1,4 +1,4 @@
-package activationfunctions;
+package com.github.baileydalton007.activationfunctions;
 
 /**
  * Sigmoid activation function for deep learning neurons.

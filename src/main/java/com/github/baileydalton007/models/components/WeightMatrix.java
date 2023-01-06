@@ -1,4 +1,4 @@
-package models.components;
+package com.github.baileydalton007.models.components;
 
 /**
  * Class for a matrix specifically for representing the weights between a layer

@@ -1,4 +1,4 @@
-package activationfunctions;
+package com.github.baileydalton007.activationfunctions;
 
 import java.util.function.Function;
 

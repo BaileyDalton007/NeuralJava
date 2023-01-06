@@ -1,7 +1,7 @@
-package models.components;
+package com.github.baileydalton007.models.components;
 
-import activationfunctions.ActivationFunction;
-import exceptions.IncompatibleInputException;
+import com.github.baileydalton007.activationfunctions.ActivationFunction;
+import com.github.baileydalton007.exceptions.IncompatibleInputException;
 
 /**
  * Class for layers that make up neural networks.

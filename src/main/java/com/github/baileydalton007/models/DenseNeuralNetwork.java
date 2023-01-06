@@ -1,11 +1,11 @@
-package models;
+package com.github.baileydalton007.models;
 
-import exceptions.IncompatibleInputException;
-import exceptions.NetworkTooSmallException;
+import com.github.baileydalton007.exceptions.IncompatibleInputException;
+import com.github.baileydalton007.exceptions.NetworkTooSmallException;
 
-import models.components.Layer;
-import models.components.Neuron;
-import models.components.WeightMatrix;
+import com.github.baileydalton007.models.components.Layer;
+import com.github.baileydalton007.models.components.Neuron;
+import com.github.baileydalton007.models.components.WeightMatrix;
 
 /**
  * A class for Dense Neural Networks where every neuron in a layer is connected

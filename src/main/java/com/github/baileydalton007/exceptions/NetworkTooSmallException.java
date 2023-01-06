@@ -1,4 +1,4 @@
-package exceptions;
+package com.github.baileydalton007.exceptions;
 
 /**
  * Exception for when a Network is initialized with too few layers.
