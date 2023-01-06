@@ -16,6 +16,12 @@ public class TestLayer {
      */
     @Test
     public void TestSize() {
-        assertEquals(1, new Layer(1, "relu"));
+        assertEquals(1, new Layer(1, "relu").size());
+        assertEquals(4, new Layer(4, "relu").size());
+        assertEquals(16, new Layer(16, "relu").size());
+        assertEquals(128, new Layer(128, "relu").size());
+
+        assertEquals(0, new Layer(0, "relu").size());
+
     }
 }

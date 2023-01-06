@@ -4,6 +4,7 @@ import com.github.baileydalton007.activationfunctions.ActivationFunction;
 import com.github.baileydalton007.activationfunctions.ReLUFunction;
 import com.github.baileydalton007.activationfunctions.SigmoidFunction;
 import com.github.baileydalton007.exceptions.IncompatibleInputException;
+import com.github.baileydalton007.exceptions.LayerTooSmallException;
 import com.github.baileydalton007.exceptions.UnknownActivationFunction;
 
 /**
@@ -19,12 +20,17 @@ public class Layer {
      * Constructor for a layer instance.
      * 
      * @param numNeurons         The number of neurons that should make up the
-     *                           layer
+     *                           layer, must be 1 or more
      * @param activationFunction The activation function that each neuron in the
      *                           layer should use. For Rectified Linear Unit use
      *                           "relu", for sigmoid use "sigmoid"
      */
     public Layer(int numNeurons, String activationFunctionString) {
+
+        // Throws an exception if a layer is made with less than one neuron.
+        if (numNeurons < 1)
+            throw new LayerTooSmallException();
+
         // Creates an array to store the neurons in the layer.
         neurons = new Neuron[numNeurons];
 
