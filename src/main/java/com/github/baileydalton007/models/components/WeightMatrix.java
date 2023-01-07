@@ -1,5 +1,6 @@
 package com.github.baileydalton007.models.components;
 
+import com.github.baileydalton007.exceptions.IncompatibleInputException;
 import com.github.baileydalton007.exceptions.MatrixTooSmallException;
 
 /**
@@ -64,9 +65,36 @@ public class WeightMatrix {
     /**
      * Setter for the whole matrix.
      * 
-     * @param input The 2D array to make the matrix.
+     * @param input The 2D array to make the matrix
      */
     public void setMatrix(double[][] input) {
         matrix = input;
+    }
+
+    /**
+     * Adds the input matrix to this matrix.
+     * Matrices must be the same shape to add.
+     * 
+     * @param input WeightMatrix of the same shape as this matrix to add
+     */
+    public void add(WeightMatrix input) {
+        // Stores the matrices to add.
+        double[][] m1 = this.getMatrix();
+        double[][] m2 = input.getMatrix();
+
+        // Checks if the two matrices are the same shape.
+        if (m1.length != m2.length || m1[0].length != m2[0].length)
+            throw new IncompatibleInputException("Weight Matrices must have the same dimensions to add together");
+
+        // Iterates through each row of the matrix.
+        for (int i = 0; i < m1.length; i++) {
+
+            // Iterates through each column of the matrix adding the elements.
+            for (int j = 0; j < m1[0].length; j++) {
+                m1[i][j] += m2[i][j];
+            }
+        }
+
+        this.setMatrix(m1);
     }
 }
