@@ -19,7 +19,7 @@ public class DenseNeuralNetwork {
 
     // Array for storing the weight matrix objects connecting each layer to the
     // previous in the network.
-    public WeightMatrix[] layerWeights;
+    private WeightMatrix[] layerWeights;
 
     /**
      * Constructor for a dense neural network object.
@@ -111,7 +111,18 @@ public class DenseNeuralNetwork {
         return layerArray[layerArray.length - 1].getLayerActivations();
     }
 
-    public void backPropagation(double[] input, double[] truth) {
+    /**
+     * Implements the backpropagation algorithm for a dense neural network.
+     * Adjusts weights of network based on the input training example and error in
+     * the network.
+     * 
+     * @param input        The input of the training example
+     * @param truth        The ground truth of the training example, what the
+     *                     network should output.
+     * @param learningRate The amount which the weights are adjusted. Most often a
+     *                     value between 0.0 and 1.0.
+     */
+    public void backPropagation(double[] input, double[] truth, double learningRate) {
         /*
          * Propagates the network forward with the given inputs to activate the
          * network's neurons.
@@ -129,7 +140,13 @@ public class DenseNeuralNetwork {
          * each weight should be adjusted. Will be added to the network's array
          * of weight matrices to tune the network.
          */
-        WeightMatrix[] deltaWeights = getWeightAdjustments(1.0, errorMatrix);
+        WeightMatrix[] deltaWeights = getWeightAdjustments(learningRate, errorMatrix);
+
+        // Iterates through each layer of weights, and updating them according to the
+        // delta values.
+        for (int layerIndex = 1; layerIndex < layerArray.length; layerIndex++) {
+            this.layerWeights[layerIndex - 1].add(deltaWeights[layerIndex - 1]);
+        }
     }
 
     /**
