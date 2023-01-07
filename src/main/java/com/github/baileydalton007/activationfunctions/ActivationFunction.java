@@ -17,4 +17,13 @@ public abstract class ActivationFunction implements Function<Double, Double> {
      */
     @Override
     public abstract Double apply(Double x);
+
+    /**
+     * Method stub implementing an activation function's derivative function.
+     * Used for back propagation error calculations.
+     * 
+     * @param x The input to the derivative function.
+     * @return The output of the derivative function.
+     */
+    public abstract Double derivative(Double x);
 }

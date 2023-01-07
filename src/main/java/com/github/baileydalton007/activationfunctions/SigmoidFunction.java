@@ -18,4 +18,16 @@ public class SigmoidFunction extends ActivationFunction {
         return 1 / (1 + Math.exp(-x));
     }
 
+    /**
+     * Method to apply the derivative of the sigmoimd function to an input.
+     * Used for back propagation error calculations.
+     * 
+     * @param x Input to the sigmoid derivative function
+     * @return The output of the derivative sigmoid function with x as an input.
+     */
+    @Override
+    public Double derivative(Double x) {
+        return apply(x) * (1 - apply(x));
+    }
+
 }

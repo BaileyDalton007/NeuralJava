@@ -19,4 +19,22 @@ public class ReLUFunction extends ActivationFunction {
             return x;
         return 0.0;
     }
+
+    /**
+     * Method to apply the derivative of the ReLU function to an input.
+     * Used for back propagation error calculations.
+     * 
+     * relu'(0) is undefined, I have decided to follow the convention of other
+     * deeplearning libraries like TensorFlow and have assigned it to 0.
+     * 
+     * @param x Input to the ReLU derivative function
+     * @return The output of the derivative ReLU function with x as an input.
+     */
+    @Override
+    public Double derivative(Double x) {
+        if (x <= 0.0)
+            return 0.0;
+        else
+            return 1.0;
+    }
 }
