@@ -16,6 +16,9 @@ public class Layer {
     // Array storing the layer's neurons.
     private Neuron[] neurons;
 
+    // Stores the layer's activation function.
+    private ActivationFunction activationFunction;
+
     /**
      * Constructor for a layer instance.
      * 
@@ -35,7 +38,6 @@ public class Layer {
         neurons = new Neuron[numNeurons];
 
         // Sets the activation function based on the input string.
-        ActivationFunction activationFunction;
         if (activationFunctionString.toLowerCase() == "relu")
             activationFunction = new ReLUFunction();
 
@@ -106,5 +108,14 @@ public class Layer {
      */
     public Neuron getNeuron(int index) {
         return neurons[index];
+    }
+
+    /**
+     * A getter for a layer's activation function.
+     * 
+     * @return This layer's activation function object
+     */
+    public ActivationFunction getActivationFunction() {
+        return this.activationFunction;
     }
 }
