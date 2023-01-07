@@ -30,6 +30,7 @@ public class TestLayer {
         // Makes sure an exception is thrown if layer is too small.
         try {
             new Layer(0, "relu").size();
+            fail();
         } catch (LayerTooSmallException e) {
             // Expected output, nothing happens.
         } catch (Exception e) {
@@ -53,6 +54,7 @@ public class TestLayer {
         // Makes sure an exception is thrown neuron is outside of layer.
         try {
             assertTrue(layer.getNeuron(16) instanceof Neuron);
+            fail();
         } catch (IndexOutOfBoundsException e) {
             // Expected output, nothing happens.
         } catch (Exception e) {
@@ -84,6 +86,7 @@ public class TestLayer {
         // of the layer.
         try {
             l.input(new double[] { -2.0, 3.0 });
+            fail();
         } catch (IncompatibleInputException e) {
             // Expected output, nothing happens.
         } catch (Exception e) {
