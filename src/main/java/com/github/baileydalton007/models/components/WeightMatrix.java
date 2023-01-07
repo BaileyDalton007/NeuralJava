@@ -1,5 +1,7 @@
 package com.github.baileydalton007.models.components;
 
+import com.github.baileydalton007.exceptions.MatrixTooSmallException;
+
 /**
  * Class for a matrix specifically for representing the weights between a layer
  * and the previous layer.
@@ -24,10 +26,15 @@ public class WeightMatrix {
      * The constructor to initialize a weight matrix.
      * Matrix with be of shape (numNeurons, prevNumNeurons)
      * 
-     * @param numNeurons     The number of neurons in the layer
-     * @param prevNumNeurons The number of neurons in the previous layer
+     * @param numNeurons     The number of neurons in the layer, must be > 0
+     * @param prevNumNeurons The number of neurons in the previous layer, must be >
+     *                       0
      */
     public WeightMatrix(int numNeurons, int prevNumNeurons) {
+        // If either dimenstion of the matrix is 0, throw an exception.
+        if (numNeurons < 1 || prevNumNeurons < 1)
+            throw new MatrixTooSmallException();
+
         matrix = new double[numNeurons][prevNumNeurons];
     }
 
