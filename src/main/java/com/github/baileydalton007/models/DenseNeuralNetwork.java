@@ -19,7 +19,7 @@ public class DenseNeuralNetwork {
 
     // Array for storing the weight matrix objects connecting each layer to the
     // previous in the network.
-    private WeightMatrix[] layerWeights;
+    public WeightMatrix[] layerWeights;
 
     /**
      * Constructor for a dense neural network object.
@@ -112,13 +112,24 @@ public class DenseNeuralNetwork {
     }
 
     public void backPropagation(double[] input, double[] truth) {
-        // Propagates the network forward with the given inputs to activate the
-        // network's neurons.
+        /*
+         * Propagates the network forward with the given inputs to activate the
+         * network's neurons.
+         */
         ForwardPropagation(input);
 
-        // Propagates and stores a matrix storing the error for each neuron.
-        // The first index for layer L is (L-1) since the input layer is not included.
+        /*
+         * Propagates and stores a matrix storing the error for each neuron.
+         * The first index for layer L is (L-1) since the input layer is not included.
+         */
         double[][] errorMatrix = propagateErrorMatrix(truth);
+
+        /*
+         * An array of weight matrices denoting the amount and direction which
+         * each weight should be adjusted. Will be added to the network's array
+         * of weight matrices to tune the network.
+         */
+        WeightMatrix[] deltaWeights = getWeightAdjustments(1.0, errorMatrix);
     }
 
     /**
@@ -134,14 +145,14 @@ public class DenseNeuralNetwork {
      * @return 2D error matrix giving the error for each neuron in the network
      *         (excluding the input layer).
      */
-    public double[][] propagateErrorMatrix(double[] truth) {
+    private double[][] propagateErrorMatrix(double[] truth) {
         // Creates a matrix to store each neuron's error.
         // Amount of errors - 1 since input layer is not included.
         double[][] neuronError = new double[layerArray.length - 1][];
 
         // Iterates backward through the netowrk's layers.
         // Does not include the input layer as the error is not needed.
-        for (int layerIndex = this.layerArray.length - 1; layerIndex > 0; layerIndex--) {
+        for (int layerIndex = layerArray.length - 1; layerIndex > 0; layerIndex--) {
 
             // Stores the current layer that will have its error calculated.
             Layer currLayer = layerArray[layerIndex];
@@ -156,7 +167,7 @@ public class DenseNeuralNetwork {
 
             // Checks if the current layer is the output layer to use different error
             // calculation.
-            if (layerIndex == this.layerArray.length - 1) {
+            if (layerIndex == layerArray.length - 1) {
 
                 // Iterates through neurons in current (output) layer to calculate error for
                 // each.
@@ -198,5 +209,64 @@ public class DenseNeuralNetwork {
         }
 
         return neuronError;
+    }
+
+    /**
+     * Uses the error for each neuron in the network to calculate the appropriate
+     * change to make to each weight, and returns a array of (delta) weight matrices
+     * that can be added to the network's current array of weight matrices.
+     * 
+     * @param learningRate The relativea mount which the network will adjust
+     *                     weights. Suggested to be around 1.0.
+     * @param errorMatrix  The matrix denoting the error in each neuron, calculated
+     *                     from propagateErrorMatrix.
+     * @return An array of weight matrices denoting the amount and direction which
+     *         each weight should be adjusted. Will be added to the network's array
+     *         of weight matrices to tune the network.
+     */
+    private WeightMatrix[] getWeightAdjustments(double learningRate, double[][] errorMatrix) {
+        // Array to store the changes to each weight calculated from the errors.
+        WeightMatrix[] deltaWeights = new WeightMatrix[layerArray.length - 1];
+
+        // Iterates backward through the netowrk's layers.
+        // Does not include the input layer as the error is not needed.
+        for (int layerIndex = layerArray.length - 1; layerIndex > 0; layerIndex--) {
+            // Stores the current layer.
+            Layer currLayer = layerArray[layerIndex];
+
+            // Stores the previous layer.
+            Layer prevLayer = layerArray[layerIndex - 1];
+
+            // Creates a weight matrix that will store this layer's changes to the weights.
+            deltaWeights[layerIndex - 1] = new WeightMatrix(currLayer.size(), prevLayer.size());
+
+            // A 2D array that will store the changes to the weights before adding them to
+            // the weight matrix.
+            double[][] deltaW = new double[currLayer.size()][prevLayer.size()];
+
+            // Stores the activations of the previous layer.
+            double[] prevActivations = prevLayer.getLayerActivations();
+
+            // Iterates through each neuron in the current layer.
+            for (int neuronIndex = 0; neuronIndex < currLayer.size(); neuronIndex++) {
+
+                // Iterates through each neuron in the previous layer.
+                // Calculates the change that should be applied to the weight connecting the
+                // current neuron to the previous neuron (k-th neuron), and stores it in the 2D
+                // array.
+                for (int k = 0; k < prevLayer.size(); k++) {
+                    // DELTA_W = LEARNING_RATE * (CURR_NEURON_ERROR) *
+                    // (ACTIVATION_OF_PREVIOUS_NEURON)
+                    deltaW[neuronIndex][k] = learningRate * errorMatrix[layerIndex - 1][neuronIndex]
+                            * prevActivations[k];
+                }
+            }
+
+            // Sets the layer's delta weight matrix to the 2D array storing the delta w
+            // values.
+            deltaWeights[layerIndex - 1].setMatrix(deltaW);
+        }
+
+        return deltaWeights;
     }
 }

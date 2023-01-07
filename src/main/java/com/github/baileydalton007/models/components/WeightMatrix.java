@@ -60,4 +60,13 @@ public class WeightMatrix {
     public double getWeight(int neuronIndex, int prevNeuronIndex) {
         return getMatrix()[neuronIndex][prevNeuronIndex];
     }
+
+    /**
+     * Setter for the whole matrix.
+     * 
+     * @param input The 2D array to make the matrix.
+     */
+    public void setMatrix(double[][] input) {
+        matrix = input;
+    }
 }
