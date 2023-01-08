@@ -13,7 +13,7 @@ public class BiasUnit {
      * Constructor for a bias unit, initializes its value to 1.0;
      */
     public BiasUnit() {
-        value = 1.0;
+        value = 0.01;
     }
 
     /**

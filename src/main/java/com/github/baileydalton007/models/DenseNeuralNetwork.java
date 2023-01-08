@@ -2,7 +2,7 @@ package com.github.baileydalton007.models;
 
 import com.github.baileydalton007.exceptions.IncompatibleInputException;
 import com.github.baileydalton007.exceptions.NetworkTooSmallException;
-
+import com.github.baileydalton007.models.components.BiasUnit;
 import com.github.baileydalton007.models.components.Layer;
 import com.github.baileydalton007.models.components.Neuron;
 import com.github.baileydalton007.models.components.WeightMatrix;
@@ -19,7 +19,10 @@ public class DenseNeuralNetwork {
 
     // Array for storing the weight matrix objects connecting each layer to the
     // previous in the network.
-    private WeightMatrix[] layerWeights;
+    public WeightMatrix[] layerWeights;
+
+    // Array for storing each layer's bias unit.
+    private BiasUnit[] layerBiases;
 
     /**
      * Constructor for a dense neural network object.
@@ -39,10 +42,18 @@ public class DenseNeuralNetwork {
         // as the input layer layer will not have a weight matrix.
         this.layerWeights = new WeightMatrix[layerArray.length - 1];
 
-        // Iterates through each set of weights (between two layers) and initializes an
-        // appropriately sized weight matrix.
+        // Bias array will be the same size as the amount of layers minus one
+        // as the input layer layer will not have a bias.
+        this.layerBiases = new BiasUnit[layerArray.length - 1];
+
+        // Iterates through each layer and initializes an appropriately sized weight
+        // matrix and bias.
         for (int i = 0; i < layerWeights.length; i++) {
+            // Initializes weight matrices.
             layerWeights[i] = new WeightMatrix(layerArray[i + 1].size(), layerArray[i].size());
+
+            // Initializes bias units.
+            layerBiases[i] = new BiasUnit();
         }
     }
 
@@ -66,6 +77,7 @@ public class DenseNeuralNetwork {
 
         // For each layer in the network, for each neuron in that layer, calculate the
         // activation by taking the weighted sum with all the previous layer's neurons.
+        // Index starts at 1 since input layer does not need to be calculated.
         for (int layerIndex = 1; layerIndex < layerArray.length; layerIndex++) {
 
             // Stores the current layer being propagated.
@@ -92,6 +104,9 @@ public class DenseNeuralNetwork {
                                                                                              // the current neuron to
                                                                                              // the previous neuron.
                 }
+
+                // Adds the bias to the weighted sum before being passed to the next neuron.
+                weightedSum += layerBiases[layerIndex - 1].getValue();
 
                 currNeuron.setInput(weightedSum);
             }
