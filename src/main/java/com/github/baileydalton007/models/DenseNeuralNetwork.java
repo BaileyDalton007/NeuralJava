@@ -1,8 +1,10 @@
 package com.github.baileydalton007.models;
 
+import com.github.baileydalton007.activationfunctions.ActivationFunction;
 import com.github.baileydalton007.exceptions.IncompatibleInputException;
 import com.github.baileydalton007.exceptions.NetworkTooSmallException;
 import com.github.baileydalton007.models.components.BiasUnit;
+import com.github.baileydalton007.models.components.ErrorTensor;
 import com.github.baileydalton007.models.components.Layer;
 import com.github.baileydalton007.models.components.Neuron;
 import com.github.baileydalton007.models.components.WeightMatrix;
@@ -19,7 +21,7 @@ public class DenseNeuralNetwork {
 
     // Array for storing the weight matrix objects connecting each layer to the
     // previous in the network.
-    public WeightMatrix[] layerWeights;
+    private WeightMatrix[] layerWeights;
 
     // Array for storing each layer's bias unit.
     private BiasUnit[] layerBiases;
@@ -98,7 +100,6 @@ public class DenseNeuralNetwork {
                 // Iterates through neurons in the previous layer, multiplies each value by its
                 // weight, then adds to the sum total.
                 for (int i = 0; i < previousLayer.size(); i++) {
-
                     weightedSum += previousLayer.getNeuron(i).getActivation() // The previous neuron's activation.
                             * this.layerWeights[layerIndex - 1].getMatrix()[neuronIndex][i]; // The weight connecting
                                                                                              // the current neuron to
@@ -128,8 +129,8 @@ public class DenseNeuralNetwork {
 
     /**
      * Implements the backpropagation algorithm for a dense neural network.
-     * Adjusts weights of network based on the input training example and error in
-     * the network.
+     * Adjusts weights an biases of network based on the input training example and
+     * error in the network.
      * 
      * @param input        The input of the training example
      * @param truth        The ground truth of the training example, what the
@@ -144,43 +145,62 @@ public class DenseNeuralNetwork {
          */
         ForwardPropagation(input);
 
-        /*
-         * Propagates and stores a matrix storing the error for each neuron.
-         * The first index for layer L is (L-1) since the input layer is not included.
-         */
-        double[][] errorMatrix = propagateErrorMatrix(truth);
+        // For neurons a error matrix is stored in the errorTensor.
+        // For biases a error array is stored in the error Tensor
+        ErrorTensor errorTensor = propagateErrorTensor(truth);
 
-        /*
-         * An array of weight matrices denoting the amount and direction which
-         * each weight should be adjusted. Will be added to the network's array
-         * of weight matrices to tune the network.
-         */
-        WeightMatrix[] deltaWeights = getWeightAdjustments(learningRate, errorMatrix);
+        // Unpacks the neuron error matrix from the error tensor.
+        // The first index for layer L is (L-1) since the input layer is not included.
+        double[][] neuronErrorMatrix = errorTensor.getNeuronErrors();
+
+        // Unpacks the bias error array from the error tensor.
+        // The first index for layer L is (L-1) since the input layer is not included.
+        double[] biasErrorArray = errorTensor.getBiasErrors();
+
+        // An array of weight matrices denoting the amount and direction which
+        // each weight should be adjusted. Will be added to the network's array
+        // of weight matrices to tune the network.
+        WeightMatrix[] deltaWeights = getWeightAdjustments(learningRate, neuronErrorMatrix);
 
         // Iterates through each layer of weights, and updating them according to the
         // delta values.
         for (int layerIndex = 1; layerIndex < layerArray.length; layerIndex++) {
             this.layerWeights[layerIndex - 1].add(deltaWeights[layerIndex - 1]);
         }
+
+        // Adjusts the model's biases for each layer based on the propagated error and
+        // learning rate.
+        adjustBiases(biasErrorArray, learningRate);
+
     }
 
     /**
-     * Propagates the error for each neuron in the network working backwards.
+     * Propagates the error for each neuron and bias in the network working
+     * backwards.
      * 
-     * The first index for layer L is (L-1) since the input layer is not included.
-     * The second index is that of the neuron in the layer.
+     * For both the neuron error matrix and the bias error array, the first index
+     * for layer L is (L-1) since the input layer is not included.
      * 
-     * EX: The error value for the 2nd index neuron on layer 4 would be:
-     * errorMatrix[3][2]
+     * EX: The error value for the index 2 neuron on layer 4 would be:
+     * errorTensor.getNeuronErrors[3][2]
+     * 
+     * EX: the bias error value for the second layer would be:
+     * errorTensor.getBiasErrors[1]
      * 
      * @param truth The expected value of the network.
-     * @return 2D error matrix giving the error for each neuron in the network
-     *         (excluding the input layer).
+     * @return An ErrorTensor which contains a 2D error matrix giving the error for
+     *         each neuron in the network (excluding the input layer) and a 1D error
+     *         array giving the error for each bias in the network (excluding the
+     *         input layer).
      */
-    private double[][] propagateErrorMatrix(double[] truth) {
+    private ErrorTensor propagateErrorTensor(double[] truth) {
         // Creates a matrix to store each neuron's error.
         // Amount of errors - 1 since input layer is not included.
         double[][] neuronError = new double[layerArray.length - 1][];
+
+        // Creates an array to store each layer's bias's error.
+        // Amount of errors - 1 since input layer is not included.
+        double[] biasError = new double[layerArray.length - 1];
 
         // Iterates backward through the netowrk's layers.
         // Does not include the input layer as the error is not needed.
@@ -188,6 +208,9 @@ public class DenseNeuralNetwork {
 
             // Stores the current layer that will have its error calculated.
             Layer currLayer = layerArray[layerIndex];
+
+            // Stores the current layer's activation function.
+            ActivationFunction activationFunction = currLayer.getActivationFunction();
 
             // Creates a row in the matrix with the amount of columns needed to store the
             // error for each neuron in the layer.
@@ -208,11 +231,16 @@ public class DenseNeuralNetwork {
                     // where WEIGHTED_SUM is the input to the neuron, often denoted as the z term.
                     // where f'() is the derivative of the neuron's activation function.
                     // layerIndex - 1 since input layer is not included.
-                    neuronError[layerIndex - 1][neuronIndex] = (currLayer.getActivationFunction()
+                    neuronError[layerIndex - 1][neuronIndex] = (activationFunction
                             .derivative(currLayer.getNeuron(neuronIndex).getInput()))
                             * (truth[neuronIndex] - activations[neuronIndex]);
-                }
 
+                    // BIAS_ERROR = SUM_FOR_NEURONS_IN_LAYER(f'(BIAS_VALUE) * (TRUTH - ACTIVATION))
+                    // where f'() is the derivative of the layer's activation function.
+                    // layerIndex - 1 since input layer does not have a bias.
+                    biasError[layerIndex - 1] += activationFunction.derivative(layerBiases[layerIndex - 1].getValue())
+                            * (truth[neuronIndex] - activations[neuronIndex]);
+                }
             } else {
                 // If this layer is not an output layer.
 
@@ -235,16 +263,21 @@ public class DenseNeuralNetwork {
                     // Where f'() is the derivative of the neuron's activation function.
                     // And ERROR_SUM is the sum of the products of all the errors and weights in the
                     // next layer.
-                    //
                     // layerIndex - 1 since input layer is not included.
-                    neuronError[layerIndex - 1][neuronIndex] = currLayer.getActivationFunction()
-                            .derivative(currLayer.getNeuron(neuronIndex).getInput())
-                            * errSum;
+                    neuronError[layerIndex - 1][neuronIndex] = activationFunction
+                            .derivative(currLayer.getNeuron(neuronIndex).getInput()) * errSum;
+
+                    // BIAS_ERROR = SUM_FOR_NEURONS_IN_LAYER(f'(BIAS_VALUE) * NEURON_ERROR)
+                    // where f'() is the derivative of the layer's activation function.
+                    // layerIndex - 1 since input layer does not have a bias.
+                    biasError[layerIndex - 1] += activationFunction.derivative(layerBiases[layerIndex - 1].getValue())
+                            * neuronError[layerIndex - 1][neuronIndex];
                 }
             }
         }
 
-        return neuronError;
+        // Pack the neuron error matrix and the bias error array into an error tensor.
+        return new ErrorTensor(neuronError, biasError);
     }
 
     /**
@@ -304,5 +337,24 @@ public class DenseNeuralNetwork {
         }
 
         return deltaWeights;
+    }
+
+    /**
+     * Adjusts each bias in the model due to the bias error array passed into it.
+     * 
+     * @param errorArray   Bias error array propagated during backpropagation
+     * @param learningRate The model's learning rate, relative amount that the bias
+     *                     will be adjusted
+     */
+    private void adjustBiases(double[] errorArray, double learningRate) {
+        // Iterates through each bias to update them.
+        for (int i = 0; i < errorArray.length; i++) {
+            // Stores the current bias unit.
+            BiasUnit currBias = layerBiases[i];
+
+            // b = b + LEARNING_RATE * BIAS_ERROR
+            // Updates the current bias based on the learning rate and that bias's error.
+            currBias.setValue(currBias.getValue() + learningRate * errorArray[i]);
+        }
     }
 }

@@ -10,10 +10,10 @@ public class BiasUnit {
     private double value;
 
     /**
-     * Constructor for a bias unit, initializes its value to 1.0;
+     * Constructor for a bias unit, initializes its value to 0.1;
      */
     public BiasUnit() {
-        value = 0.01;
+        value = 0.1;
     }
 
     /**
