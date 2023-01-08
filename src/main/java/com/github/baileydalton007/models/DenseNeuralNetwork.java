@@ -204,11 +204,13 @@ public class DenseNeuralNetwork {
                 // Iterates through neurons in current (output) layer to calculate error for
                 // each.
                 for (int neuronIndex = 0; neuronIndex < currLayer.size(); neuronIndex++) {
-                    // ERROR = f'(ACTIVATION) * (TRUTH - ACTIVATION)
+                    // ERROR = f'(WEIGHTED_SUM) * (TRUTH - ACTIVATION)
+                    // where WEIGHTED_SUM is the input to the neuron, often denoted as the z term.
                     // where f'() is the derivative of the neuron's activation function.
                     // layerIndex - 1 since input layer is not included.
                     neuronError[layerIndex - 1][neuronIndex] = (currLayer.getActivationFunction()
-                            .derivative(activations[neuronIndex])) * (truth[neuronIndex] - activations[neuronIndex]);
+                            .derivative(currLayer.getNeuron(neuronIndex).getInput()))
+                            * (truth[neuronIndex] - activations[neuronIndex]);
                 }
 
             } else {
@@ -228,14 +230,16 @@ public class DenseNeuralNetwork {
                         errSum += neuronError[layerIndex][k] * layerWeights[layerIndex].getMatrix()[k][neuronIndex];
                     }
 
-                    // ERROR = f'(ACTIVATION) * (ERROR_SUM)
+                    // ERROR = f'(WEIGHTED_SUM) * (ERROR_SUM)
+                    // where WEIGHTED_SUM is the input to the neuron, often denoted as the z term.
                     // Where f'() is the derivative of the neuron's activation function.
                     // And ERROR_SUM is the sum of the products of all the errors and weights in the
                     // next layer.
                     //
                     // layerIndex - 1 since input layer is not included.
                     neuronError[layerIndex - 1][neuronIndex] = currLayer.getActivationFunction()
-                            .derivative(activations[neuronIndex]) * errSum;
+                            .derivative(currLayer.getNeuron(neuronIndex).getInput())
+                            * errSum;
                 }
             }
         }

@@ -49,4 +49,16 @@ public class Neuron {
 
         return activation;
     }
+
+    /**
+     * Getter for the input a neuron is recieving prior to the application of the
+     * activation function.
+     * 
+     * This is commonly denoted as the z term.
+     * 
+     * @return The weighted sum being passed into this neuron
+     */
+    public double getInput() {
+        return this.input;
+    }
 }
