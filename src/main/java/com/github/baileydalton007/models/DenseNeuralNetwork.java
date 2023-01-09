@@ -37,6 +37,9 @@ public class DenseNeuralNetwork {
     // training.
     private int trainingUpdateInterval = 1;
 
+    // The model's current mean squared error while training.
+    private double trainMeanSquaredError;
+
     /**
      * Constructor for a dense neural network object.
      * 
@@ -78,7 +81,13 @@ public class DenseNeuralNetwork {
      *                     training example. Target outputs should map to the
      *                     targets array
      * @param targets      The target values for the network. Each row is a training
-     *                     example. Training inputs should map to the inputs array
+     *                     example. Training targets should map to the inputs array
+     * @param testInputs   Test input values for the network. Will be used to
+     *                     calculate the model's test error. Each row is a test
+     *                     example. Test inputs should map to the testTargets array
+     * @param testTargets  Test target values for the network. Will be used to
+     *                     calculate the model's test error. Test targets should map
+     *                     to the test inputs array
      * @param learningRate The amount which the weights are adjusted. Most often a
      *                     value between 0.0 and 1.0
      * @param epoch        Amount of cycles the network should train through the
@@ -86,7 +95,8 @@ public class DenseNeuralNetwork {
      * @param verbose      If true, data will be output for each
      *                     trainingUpdateInterval on the training process
      */
-    public void train(double[][] inputs, double[][] targets, double learningRate, int epoch, boolean verbose) {
+    public void train(double[][] inputs, double[][] targets, double[][] testInputs, double[][] testTargets,
+            double learningRate, int epoch, boolean verbose) {
         // Stores the amount of digits in the input amount of epochs for padding console
         // output.
         int digitsInEpoch = (int) Math.log10(epoch) + 1;
@@ -102,9 +112,13 @@ public class DenseNeuralNetwork {
             // the learning rate.
             this.backPropagation(inputs, targets, learningRate);
 
+            // Stores the test error of the network in its current point in training with
+            // the passed in test dataset.
+            double testError = this.benchmarkError(testInputs, testTargets);
+
             // If in verbose mode, update the terminal on every interval.
             if (verbose) {
-                printUpdateString(i, epoch, digitsInEpoch);
+                printUpdateString(i, epoch, digitsInEpoch, testError);
             }
         }
 
@@ -158,12 +172,13 @@ public class DenseNeuralNetwork {
     /**
      * Method that prints a training update to the terminal.
      * 
-     * @param i             Current epoch being trained
+     * @param i             Current epoch index being trained
      * @param epoch         The total amount of epochs that the model will be
      *                      trained
      * @param digitsInEpoch The amount of digits in the epoch integer
+     * @param testError     The calculated error of the network with a test dataset.
      */
-    private void printUpdateString(int i, int epoch, int digitsInEpoch) {
+    private void printUpdateString(int i, int epoch, int digitsInEpoch, double testError) {
         // Display an update if the current epoch is in the update interval, or it is
         // the first or last epoch.
         if ((i + 1) % trainingUpdateInterval == 0 || i == 0 || i == epoch - 1) {
@@ -186,14 +201,67 @@ public class DenseNeuralNetwork {
 
             // Adds the duration of interval of epochs training.
             updateString = updateString
-                    .concat(String.format("Time for %" + digitsInEpoch + "d Epochs: %dm %ds |", i + 1,
+                    .concat(String.format("Time for Training Interval: %dm %2ds | ",
                             duration.getSeconds() / 60,
                             duration.getSeconds()));
 
+            // Adds average training error.
+            updateString = updateString.concat(String.format("Train Error: %10.3f | ", this.trainMeanSquaredError));
+
+            // Adds test error.
+            updateString = updateString.concat(String.format("Test Error: %10.3f | ", testError));
+
             System.out.println(updateString);
 
+            // Updates the time interval for the next loop.
             this.start = Instant.now();
         }
+    }
+
+    /**
+     * A method to determine the network's Mean Squared Error (MSE) based on a test
+     * or validation dataset.
+     * 
+     * @param testInputs  Array of test or validation inputs to the network. Each
+     *                    input array to the
+     *                    network should be the same size as the network's input
+     *                    layer.
+     * @param testTargets Array of test or validation targets for the network. Each
+     *                    input array to the
+     *                    network should be the same size as the network's output
+     *                    layer.
+     * @return Mean Squared Error (MSE) of the network over the test/validation
+     *         dataset.
+     */
+    private double benchmarkError(double[][] testInputs, double[][] testTargets) {
+        // Stores the sum of the errors in all the input / target pairs.
+        double errorSum = 0.0;
+
+        // Propagates the network's outputs from the test inputs.
+        double[][] outputs = forwardPropagation(testInputs);
+
+        // Interates through each input / target pair and calculates the sum of their
+        // errors to be averaged.
+        for (int exampleIndex = 0; exampleIndex < outputs.length; exampleIndex++) {
+
+            // Stores the error sum for each test example.
+            double exampleErrorSum = 0.0;
+
+            // Iterates through all the values in the output (neurons in the output layer),
+            // and sums up their MSE.
+            for (int activationIndex = 0; activationIndex < outputs[exampleIndex].length; activationIndex++) {
+                exampleErrorSum += Math
+                        .pow(outputs[exampleIndex][activationIndex] - testTargets[exampleIndex][activationIndex], 2);
+            }
+
+            // Adds the test example's MSE to the network's error sum.
+            errorSum += exampleErrorSum;
+
+        }
+
+        // Averages the errors in the network to return the network's Mean Square Error
+        // (MSE).
+        return errorSum / testInputs.length;
     }
 
     /**
@@ -304,7 +372,7 @@ public class DenseNeuralNetwork {
         // Checks to make sure input and truth are the same size (number of rows).
         if (inputs.length != targets.length)
             throw new IncompatibleInputException(
-                    "The amount of examples int the input should match the amount of examples int the expected answers.");
+                    "The amount of examples in the input should match the amount of examples int the expected answers.");
 
         // For neurons a error matrix is stored in the errorTensor.
         // For biases a error array is stored in the error Tensor
@@ -403,6 +471,10 @@ public class DenseNeuralNetwork {
                 // calculation.
                 if (layerIndex == layerArray.length - 1) {
 
+                    // Stores the sum for the layer's error to be used to calculate the model's
+                    // training error.
+                    double meanSquaredErrorSum = 0.0;
+
                     // Iterates through neurons in current (output) layer to calculate error for
                     // each.
                     for (int neuronIndex = 0; neuronIndex < currLayer.size(); neuronIndex++) {
@@ -421,7 +493,19 @@ public class DenseNeuralNetwork {
                         biasErrorSum[layerIndex - 1] = biasError[layerIndex - 1] += activationFunction
                                 .derivative(layerBiases[layerIndex - 1].getValue())
                                 * (targets[inputIndex][neuronIndex] - activations[neuronIndex]);
+
+                        // MSE = SUM(|ai - yi| ^ 2) / NEURONS_IN_OUTPUT
+                        // Mean squared error calculation.
+                        // Where ai is the activation of output neuron i.
+                        // Where yi is the target activation of output neuron i.
+                        // Here sums the errors to be divided after the loop.
+                        meanSquaredErrorSum += Math.pow((activations[neuronIndex] - targets[inputIndex][neuronIndex]),
+                                2);
                     }
+
+                    // Averages the training mean squared error for the output layer.
+                    this.trainMeanSquaredError = meanSquaredErrorSum / currLayer.size();
+
                 } else {
                     // If this layer is not an output layer.
 
