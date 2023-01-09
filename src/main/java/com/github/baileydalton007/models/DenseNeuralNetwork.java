@@ -60,6 +60,52 @@ public class DenseNeuralNetwork {
     }
 
     /**
+     * Training method for the dense neural network model. Will adjust
+     * weights/biases to minmize error between the input and target values.
+     * 
+     * @param inputs       The training input values for the network. Each row is a
+     *                     training example. Target outputs should map to the
+     *                     targets array
+     * @param targets      The target values for the network. Each row is a training
+     *                     example. Training inputs should map to the inputs array
+     * @param learningRate The amount which the weights are adjusted. Most often a
+     *                     value between 0.0 and 1.0
+     * @param epoch        Amount of cycles the network should train through the
+     *                     training data
+     */
+    public void train(double[][] inputs, double[][] targets, double learningRate, int epoch) {
+        // Cycle for each epoch of the training process.
+        for (int i = 0; i < epoch; i++) {
+            // Performs backpropagation and adjusts weights/biases accordingly relative to
+            // the learning rate.
+            this.backPropagation(inputs, targets, learningRate);
+        }
+    }
+
+    /**
+     * Returns the model's output for a given inputs.
+     * 
+     * @param input The input array to the network, should be the same size as the
+     *              input layer
+     * @return The output of the network propagated from the input
+     */
+    public double[] predict(double[] input) {
+        return forwardPropagation(input);
+    }
+
+    /**
+     * Returns the model's output for an array of inputs.
+     * 
+     * @param input Array of inputs to the network. Each input array to the network
+     *              should be the same size as the network's input layer
+     * @return Array of the network's outputs propagated from the given inputs. Each
+     *         row is a different output mapping to the same indexed input
+     */
+    public double[][] predict(double[][] input) {
+        return forwardPropagation(input);
+    }
+
+    /**
      * Forward propagation algorithm calculating activations through the network.
      * 
      * @param input The input array to the network, should be the same size as the
@@ -68,7 +114,7 @@ public class DenseNeuralNetwork {
      * @throws IncompatibleInputException Thrown if the size of the input array is
      *                                    not the same as the input layer.
      */
-    public double[] forwardPropagation(double[] input) throws IncompatibleInputException {
+    private double[] forwardPropagation(double[] input) throws IncompatibleInputException {
         // Checks that the input array is the same size as the input layer.
         if (input.length != layerArray[0].size())
             throw new IncompatibleInputException(
@@ -118,16 +164,18 @@ public class DenseNeuralNetwork {
     }
 
     /**
+     * Forward propagation algorithm calculating activations through the network for
+     * an array of inputs.
      * 
      * @param input Matrix of inputs to the network. Each row should be an input
-     *              vector the size of the network's input layer.
+     *              vector the size of the network's input layer
      * @return Matrix of the network's outputs. Each row is a different output
-     *         mapping to the same indexed input.
+     *         mapping to the same indexed input
      * @throws IncompatibleInputException If the size of a training example does not
      *                                    match the size of the network's input
-     *                                    layer.
+     *                                    layer
      */
-    public double[][] forwardPropagation(double[][] input) throws IncompatibleInputException {
+    private double[][] forwardPropagation(double[][] input) throws IncompatibleInputException {
         // Creates a matrix to store the output.
         double[][] output = new double[input.length][];
 
@@ -155,21 +203,21 @@ public class DenseNeuralNetwork {
      * Adjusts weights an biases of network based on the input training examples and
      * errors in the network.
      * 
-     * @param input        The input of the training examples
-     * @param truth        The ground truth of the training examples, what the
+     * @param inputs       The input of the training examples
+     * @param targets      The ground truth of the training examples, what the
      *                     network should output.
      * @param learningRate The amount which the weights are adjusted. Most often a
      *                     value between 0.0 and 1.0.
      */
-    public void backPropagation(double[][] input, double[][] truth, double learningRate) {
+    private void backPropagation(double[][] inputs, double[][] targets, double learningRate) {
         // Checks to make sure input and truth are the same size (number of rows).
-        if (input.length != truth.length)
+        if (inputs.length != targets.length)
             throw new IncompatibleInputException(
                     "The amount of examples int the input should match the amount of examples int the expected answers.");
 
         // For neurons a error matrix is stored in the errorTensor.
         // For biases a error array is stored in the error Tensor
-        ErrorTensor errorTensor = propagateErrorTensor(input, truth);
+        ErrorTensor errorTensor = propagateErrorTensor(inputs, targets);
 
         // Unpacks the neuron error matrix from the error tensor.
         // The first index for layer L is (L-1) since the input layer is not included.
@@ -209,13 +257,15 @@ public class DenseNeuralNetwork {
      * EX: the bias error value for the second layer would be:
      * errorTensor.getBiasErrors[1]
      * 
-     * @param truth The expected value of the network.
+     * @param inputs  The input values to the network that will be compared with the
+     *                targets.
+     * @param targets The expected value of the network.
      * @return An ErrorTensor which contains a 2D error matrix giving the error for
      *         each neuron in the network (excluding the input layer) and a 1D error
      *         array giving the error for each bias in the network (excluding the
      *         input layer).
      */
-    private ErrorTensor propagateErrorTensor(double[][] input, double[][] truth) {
+    private ErrorTensor propagateErrorTensor(double[][] inputs, double[][] targets) {
         // Creates a matrix to store the sum of all training example's errors for each
         // neuron.
         double[][] neuronErrorSum = new double[layerArray.length - 1][];
@@ -226,11 +276,11 @@ public class DenseNeuralNetwork {
 
         // Iterates through all the training examples to calculate the sum error for the
         // training examples.
-        for (int inputIndex = 0; inputIndex < input.length; inputIndex++) {
+        for (int inputIndex = 0; inputIndex < inputs.length; inputIndex++) {
 
             // Propagates the network forward with the given inputs to activate the
             // network's neurons.
-            forwardPropagation(input[inputIndex]);
+            forwardPropagation(inputs[inputIndex]);
 
             // Creates a matrix to store each neuron's error.
             // Amount of errors - 1 since input layer is not included.
@@ -273,14 +323,14 @@ public class DenseNeuralNetwork {
                         neuronErrorSum[layerIndex
                                 - 1][neuronIndex] = neuronError[layerIndex - 1][neuronIndex] = (activationFunction
                                         .derivative(currLayer.getNeuron(neuronIndex).getInput()))
-                                        * (truth[inputIndex][neuronIndex] - activations[neuronIndex]);
+                                        * (targets[inputIndex][neuronIndex] - activations[neuronIndex]);
 
                         // BIAS_ERROR = SUM_FOR_NEURONS_IN_LAYER(f'(BIAS_VALUE) * (TRUTH - ACTIVATION))
                         // where f'() is the derivative of the layer's activation function.
                         // layerIndex - 1 since input layer does not have a bias.
                         biasErrorSum[layerIndex - 1] = biasError[layerIndex - 1] += activationFunction
                                 .derivative(layerBiases[layerIndex - 1].getValue())
-                                * (truth[inputIndex][neuronIndex] - activations[neuronIndex]);
+                                * (targets[inputIndex][neuronIndex] - activations[neuronIndex]);
                     }
                 } else {
                     // If this layer is not an output layer.
@@ -328,14 +378,14 @@ public class DenseNeuralNetwork {
         // Divide the sums of each bias's error by the number of inputs.
         // This array is the average error for each bias in the network.
         for (int i = 0; i < biasErrorSum.length; i++) {
-            biasErrorSum[i] = biasErrorSum[i] / input.length;
+            biasErrorSum[i] = biasErrorSum[i] / inputs.length;
         }
 
         // Divide the sums of each neuron's error by the number of inputs.
         // This matrix is the average error for each neuron in the network.
         for (int i = 0; i < neuronErrorSum.length; i++) {
             for (int j = 0; j < neuronErrorSum[i].length; j++) {
-                neuronErrorSum[i][j] = neuronErrorSum[i][j] / input.length;
+                neuronErrorSum[i][j] = neuronErrorSum[i][j] / inputs.length;
             }
         }
 
