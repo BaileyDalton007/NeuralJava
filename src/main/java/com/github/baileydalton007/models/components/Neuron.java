@@ -1,7 +1,5 @@
 package com.github.baileydalton007.models.components;
 
-import com.github.baileydalton007.activationfunctions.ActivationFunction;
-
 /**
  * Class object for a deep learning neuron.
  * 
