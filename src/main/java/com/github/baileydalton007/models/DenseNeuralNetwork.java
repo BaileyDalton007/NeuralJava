@@ -1,5 +1,9 @@
 package com.github.baileydalton007.models;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.InputMismatchException;
+
 import com.github.baileydalton007.activationfunctions.ActivationFunction;
 import com.github.baileydalton007.exceptions.IncompatibleInputException;
 import com.github.baileydalton007.exceptions.NetworkTooSmallException;
@@ -25,6 +29,13 @@ public class DenseNeuralNetwork {
 
     // Array for storing each layer's bias unit.
     private BiasUnit[] layerBiases;
+
+    // Gives field scope to the timing of training epochs.
+    private Instant start;
+
+    // The interval at which updates will be printed to the terminal during model
+    // training.
+    private int trainingUpdateInterval = 1;
 
     /**
      * Constructor for a dense neural network object.
@@ -72,14 +83,31 @@ public class DenseNeuralNetwork {
      *                     value between 0.0 and 1.0
      * @param epoch        Amount of cycles the network should train through the
      *                     training data
+     * @param verbose      If true, data will be output for each
+     *                     trainingUpdateInterval on the training process
      */
-    public void train(double[][] inputs, double[][] targets, double learningRate, int epoch) {
+    public void train(double[][] inputs, double[][] targets, double learningRate, int epoch, boolean verbose) {
+        // Stores the amount of digits in the input amount of epochs for padding console
+        // output.
+        int digitsInEpoch = (int) Math.log10(epoch) + 1;
+
+        // Initializes the epoch timer to be displayed if verbose is enabled.
+        this.start = Instant.now();
+
         // Cycle for each epoch of the training process.
         for (int i = 0; i < epoch; i++) {
+            // Starts keeping track of the time elapsed to time the epoch.
+
             // Performs backpropagation and adjusts weights/biases accordingly relative to
             // the learning rate.
             this.backPropagation(inputs, targets, learningRate);
+
+            // If in verbose mode, update the terminal on every interval.
+            if (verbose) {
+                printUpdateString(i, epoch, digitsInEpoch);
+            }
         }
+
     }
 
     /**
@@ -103,6 +131,69 @@ public class DenseNeuralNetwork {
      */
     public double[][] predict(double[][] input) {
         return forwardPropagation(input);
+    }
+
+    /**
+     * Setter for the model's trainingUpdateInterval.
+     * 
+     * @param interval Amount of epochs between each update if training is set to
+     *                 verbose.
+     */
+    public void setTrainingUpdateInterval(int interval) {
+        if (interval < 1)
+            throw new InputMismatchException("training update interval must be greater than or equal to 1");
+        this.trainingUpdateInterval = interval;
+    }
+
+    /**
+     * Getter for the model's trainingUpdateInterval.
+     * 
+     * @return interval Amount of epochs between each update if training is set to
+     *         verbose.
+     */
+    public int getTrainingUpdateInterval() {
+        return this.trainingUpdateInterval;
+    }
+
+    /**
+     * Method that prints a training update to the terminal.
+     * 
+     * @param i             Current epoch being trained
+     * @param epoch         The total amount of epochs that the model will be
+     *                      trained
+     * @param digitsInEpoch The amount of digits in the epoch integer
+     */
+    private void printUpdateString(int i, int epoch, int digitsInEpoch) {
+        // Display an update if the current epoch is in the update interval, or it is
+        // the first or last epoch.
+        if ((i + 1) % trainingUpdateInterval == 0 || i == 0 || i == epoch - 1) {
+            // Creates a string that will be output to the terminal.
+            String updateString = new String();
+
+            // Adds the epoch count.
+            updateString = updateString.concat(String.format("| Epoch: %" + digitsInEpoch + "d | ", i + 1));
+
+            // Adds the progress percentage.
+            // If it is the last epoch, print "Done!" instead of percentage.
+            if (i == epoch - 1)
+                updateString = updateString.concat(String.format("Progress: Done! | "));
+            else
+                updateString = updateString
+                        .concat(String.format("Progress: %04.1f%% | ", ((float) i / epoch) * 100));
+
+            // Stores the duration of epoch.
+            Duration duration = Duration.between(this.start, Instant.now());
+
+            // Adds the duration of interval of epochs training.
+            updateString = updateString
+                    .concat(String.format("Time for %" + digitsInEpoch + "d Epochs: %dm %ds |", i + 1,
+                            duration.getSeconds() / 60,
+                            duration.getSeconds()));
+
+            System.out.println(updateString);
+
+            this.start = Instant.now();
+        }
     }
 
     /**
@@ -241,7 +332,6 @@ public class DenseNeuralNetwork {
         // Adjusts the model's biases for each layer based on the propagated error and
         // learning rate.
         adjustBiases(biasErrorArray, learningRate);
-
     }
 
     /**
