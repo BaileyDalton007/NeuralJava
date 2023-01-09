@@ -28,12 +28,12 @@ public class TestDenseNeuralNetwork {
 
         // Checks that are all outputs are zero when initialized, because all weights
         // are zero.
-        assertArrayEquals(new double[] { 0.0, 0.0 }, m.ForwardPropagation(new double[] { 1.0, 2.0, 3.0 }));
+        assertArrayEquals(new double[] { 0.0, 0.0 }, m.forwardPropagation(new double[] { 1.0, 2.0, 3.0 }));
 
         // Tests that an exception is thrown if input array and the input layer are not
         // the same size.
         try {
-            m.ForwardPropagation(new double[] { 1.0, 2.0 });
+            m.forwardPropagation(new double[] { 1.0, 2.0 });
             fail();
         } catch (IncompatibleInputException e) {
             // Expected output, nothing happens.

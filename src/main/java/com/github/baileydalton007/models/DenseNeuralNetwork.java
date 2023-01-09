@@ -68,7 +68,7 @@ public class DenseNeuralNetwork {
      * @throws IncompatibleInputException Thrown if the size of the input array is
      *                                    not the same as the input layer.
      */
-    public double[] ForwardPropagation(double[] input) throws IncompatibleInputException {
+    public double[] forwardPropagation(double[] input) throws IncompatibleInputException {
         // Checks that the input array is the same size as the input layer.
         if (input.length != layerArray[0].size())
             throw new IncompatibleInputException(
@@ -115,6 +115,29 @@ public class DenseNeuralNetwork {
         }
 
         return getOutput();
+    }
+
+    /**
+     * 
+     * @param input Matrix of inputs to the network. Each row should be an input
+     *              vector the size of the network's input layer.
+     * @return Matrix of the network's outputs. Each row is a different output
+     *         mapping to the same indexed input.
+     * @throws IncompatibleInputException If the size of a training example does not
+     *                                    match the size of the network's input
+     *                                    layer.
+     */
+    public double[][] forwardPropagation(double[][] input) throws IncompatibleInputException {
+        // Creates a matrix to store the output.
+        double[][] output = new double[input.length][];
+
+        // Iterates through the inputs and propagates them before storing them in the
+        // output.
+        for (int i = 0; i < input.length; i++) {
+            output[i] = forwardPropagation(input[i]);
+        }
+
+        return output;
     }
 
     /**
@@ -207,7 +230,7 @@ public class DenseNeuralNetwork {
 
             // Propagates the network forward with the given inputs to activate the
             // network's neurons.
-            ForwardPropagation(input[inputIndex]);
+            forwardPropagation(input[inputIndex]);
 
             // Creates a matrix to store each neuron's error.
             // Amount of errors - 1 since input layer is not included.
