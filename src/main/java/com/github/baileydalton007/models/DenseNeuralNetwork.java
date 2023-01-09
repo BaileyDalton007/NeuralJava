@@ -179,7 +179,7 @@ public class DenseNeuralNetwork {
                 updateString = updateString.concat(String.format("Progress: Done! | "));
             else
                 updateString = updateString
-                        .concat(String.format("Progress: %04.1f%% | ", ((float) i / epoch) * 100));
+                        .concat(String.format("Progress: %04.1f%% | ", ((float) (i + 1) / epoch) * 100));
 
             // Stores the duration of epoch.
             Duration duration = Duration.between(this.start, Instant.now());
