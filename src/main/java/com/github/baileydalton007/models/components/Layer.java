@@ -3,6 +3,7 @@ package com.github.baileydalton007.models.components;
 import com.github.baileydalton007.activationfunctions.ActivationFunction;
 import com.github.baileydalton007.activationfunctions.ReLUFunction;
 import com.github.baileydalton007.activationfunctions.SigmoidFunction;
+import com.github.baileydalton007.activationfunctions.SoftmaxFunction;
 import com.github.baileydalton007.exceptions.IncompatibleInputException;
 import com.github.baileydalton007.exceptions.LayerTooSmallException;
 import com.github.baileydalton007.exceptions.UnknownActivationFunction;
@@ -44,6 +45,9 @@ public class Layer {
         else if (activationFunctionString.toLowerCase() == "sigmoid")
             activationFunction = new SigmoidFunction();
 
+        else if (activationFunctionString.toLowerCase() == "softmax")
+            activationFunction = new SoftmaxFunction();
+
         else
             // If the function is unknown, throw an exception.
             throw new UnknownActivationFunction(activationFunctionString
@@ -51,7 +55,7 @@ public class Layer {
 
         // Creates and stores neurons in the array.
         for (int i = 0; i < numNeurons; i++) {
-            neurons[i] = new Neuron(activationFunction);
+            neurons[i] = new Neuron();
         }
     }
 
@@ -61,15 +65,7 @@ public class Layer {
      * @return Array of activations of the neurons in the layer.
      */
     public double[] getLayerActivations() {
-        // Creates an array to store activations for the neurons in the layer.
-        double[] activations = new double[neurons.length];
-
-        // Iterates through neurons to calculate and store the activation for each.
-        for (int i = 0; i < neurons.length; i++) {
-            activations[i] = getNeuron(i).getActivation();
-        }
-
-        return activations;
+        return activationFunction.apply(getLayerInputs());
     }
 
     /**
@@ -101,6 +97,24 @@ public class Layer {
     }
 
     /**
+     * Getter for this layer's neurons inputs. Used to calculate the activations for
+     * the layer.
+     * 
+     * @return Array of inputs to each neuron in the layer
+     */
+    public double[] getLayerInputs() {
+        // Stores the input to each neuron in the layer.
+        double[] inputs = new double[this.size()];
+
+        // Iterates through each neuron in the layer and stores its input.
+        for (int i = 0; i < inputs.length; i++) {
+            inputs[i] = getNeuron(i).getInput();
+        }
+
+        return inputs;
+    }
+
+    /**
      * Returns the neuron in a layer at a given index.
      * 
      * @param index The index of the neuron that should be accessed
@@ -118,4 +132,5 @@ public class Layer {
     public ActivationFunction getActivationFunction() {
         return this.activationFunction;
     }
+
 }

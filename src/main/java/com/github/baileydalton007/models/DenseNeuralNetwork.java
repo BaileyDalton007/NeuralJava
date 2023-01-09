@@ -305,7 +305,7 @@ public class DenseNeuralNetwork {
                 // Iterates through neurons in the previous layer, multiplies each value by its
                 // weight, then adds to the sum total.
                 for (int i = 0; i < previousLayer.size(); i++) {
-                    weightedSum += previousLayer.getNeuron(i).getActivation() // The previous neuron's activation.
+                    weightedSum += previousLayer.getLayerActivations()[i] // The previous neuron's activation.
                             * this.layerWeights[layerIndex - 1].getMatrix()[neuronIndex][i]; // The weight connecting
                                                                                              // the current neuron to
                                                                                              // the previous neuron.
@@ -467,6 +467,10 @@ public class DenseNeuralNetwork {
                 // Stores the activations for the current layer.
                 double[] activations = currLayer.getLayerActivations();
 
+                // Calculates the derivative terms for the error calculations below. Represented
+                // as f'(WEIGHTED_SUMS)
+                double[] derivativeTerms = activationFunction.derivative(currLayer.getLayerInputs());
+
                 // Checks if the current layer is the output layer to use different error
                 // calculation.
                 if (layerIndex == layerArray.length - 1) {
@@ -482,10 +486,11 @@ public class DenseNeuralNetwork {
                         // where WEIGHTED_SUM is the input to the neuron, often denoted as the z term.
                         // where f'() is the derivative of the neuron's activation function.
                         // layerIndex - 1 since input layer is not included.
+
                         neuronErrorSum[layerIndex
-                                - 1][neuronIndex] = neuronError[layerIndex - 1][neuronIndex] = (activationFunction
-                                        .derivative(currLayer.getNeuron(neuronIndex).getInput()))
-                                        * (targets[inputIndex][neuronIndex] - activations[neuronIndex]);
+                                - 1][neuronIndex] = neuronError[layerIndex
+                                        - 1][neuronIndex] = derivativeTerms[neuronIndex]
+                                                * (targets[inputIndex][neuronIndex] - activations[neuronIndex]);
 
                         // BIAS_ERROR = SUM_FOR_NEURONS_IN_LAYER(f'(BIAS_VALUE) * (TRUTH - ACTIVATION))
                         // where f'() is the derivative of the layer's activation function.
@@ -529,8 +534,7 @@ public class DenseNeuralNetwork {
                         // And ERROR_SUM is the sum of the products of all the errors and weights in the
                         // next layer.
                         // layerIndex - 1 since input layer is not included.
-                        neuronError[layerIndex - 1][neuronIndex] = activationFunction
-                                .derivative(currLayer.getNeuron(neuronIndex).getInput()) * errSum;
+                        neuronError[layerIndex - 1][neuronIndex] = derivativeTerms[neuronIndex] * errSum;
 
                         // Adds the above neuron's error to the error sum array.
                         neuronErrorSum[layerIndex - 1][neuronIndex] += neuronError[layerIndex - 1][neuronIndex];

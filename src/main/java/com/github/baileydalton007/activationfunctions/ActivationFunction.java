@@ -7,23 +7,34 @@ import java.util.function.Function;
  * 
  * @author Bailey Dalton
  */
-public abstract class ActivationFunction implements Function<Double, Double> {
+public abstract class ActivationFunction implements Function<double[], double[]> {
 
     /**
-     * Method stub implementing Function's apply method for doubles.
+     * Method stub implementing Function's apply method for arrays of doubles.
      * 
-     * @param x The input to the activation function.
-     * @return The output of the activation function.
+     * @param x The input array to the activation function.
+     * @return The output array of the activation function.
      */
     @Override
-    public abstract Double apply(Double x);
+    public abstract double[] apply(double[] x);
+
+    /**
+     * Method stub implementing an activation function's derivative function for
+     * input arrays. Should be used when propagating error in weights.
+     * Used for back propagation error calculations.
+     * 
+     * @param x The input array to the derivative function.
+     * @return The output array of the derivative function.
+     */
+    public abstract double[] derivative(double[] x);
 
     /**
      * Method stub implementing an activation function's derivative function.
-     * Used for back propagation error calculations.
+     * Used for back propagation error calculations. Should be used when propagating
+     * error in biases.
      * 
      * @param x The input to the derivative function.
      * @return The output of the derivative function.
      */
-    public abstract Double derivative(Double x);
+    public abstract double derivative(double x);
 }
