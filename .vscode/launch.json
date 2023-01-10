@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "java",
+            "name": "Launch Maintest",
+            "request": "launch",
+            "mainClass": "com.github.baileydalton007.Maintest",
+            "projectName": "neuraljava"
+        },
+        {
             "type": "java8+",
             "request": "launch",
             "name": "Launch Java 8+ App"

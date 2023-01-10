@@ -281,6 +281,7 @@ public class DenseNeuralNetwork {
 
         // Feeds the input to the first layer.
         layerArray[0].input(input);
+        layerArray[0].updateLayerActivations();
 
         // For each layer in the network, for each neuron in that layer, calculate the
         // activation by taking the weighted sum with all the previous layer's neurons.
@@ -317,8 +318,10 @@ public class DenseNeuralNetwork {
                 currNeuron.setInput(weightedSum);
             }
 
-        }
+            // Stores the layer's activations in the layer object for optimized access later.
+            currLayer.updateLayerActivations();
 
+        }
         return getOutput();
     }
 

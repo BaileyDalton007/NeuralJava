@@ -20,6 +20,10 @@ public class Layer {
     // Stores the layer's activation function.
     private ActivationFunction activationFunction;
 
+    // Storing the layer's current activations optimize run time.
+    // Instead of iterating through each neuron every time the layer's activations are needed, they will be stored and only updated when the activations change.
+    private double[] currActivations;
+
     /**
      * Constructor for a layer instance.
      * 
@@ -37,6 +41,9 @@ public class Layer {
 
         // Creates an array to store the neurons in the layer.
         neurons = new Neuron[numNeurons];
+
+        // Creates an array to store the activations of a layer between propagation cycles.
+        currActivations = new double[numNeurons];
 
         // Sets the activation function based on the input string.
         if (activationFunctionString.toLowerCase() == "relu")
@@ -65,8 +72,15 @@ public class Layer {
      * @return Array of activations of the neurons in the layer.
      */
     public double[] getLayerActivations() {
-        return activationFunction.apply(getLayerInputs());
+        return this.currActivations;
     }
+
+    /**
+     *  Updates the layer's activations to be stored for optimization purposes. 
+     */
+    public void updateLayerActivations() {
+        this.currActivations = activationFunction.apply(getLayerInputs());
+    };
 
     /**
      * Getter for the amount of neurons in a layer.
@@ -113,6 +127,7 @@ public class Layer {
 
         return inputs;
     }
+
 
     /**
      * Returns the neuron in a layer at a given index.
