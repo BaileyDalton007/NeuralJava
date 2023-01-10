@@ -104,6 +104,9 @@ public class DenseNeuralNetwork {
         // Initializes the epoch timer to be displayed if verbose is enabled.
         this.start = Instant.now();
 
+        // Initializes the time for the whole training process, will not be updated.
+        Instant begin = Instant.now();
+
         // Cycle for each epoch of the training process.
         for (int i = 0; i < epoch; i++) {
             // Starts keeping track of the time elapsed to time the epoch.
@@ -118,7 +121,7 @@ public class DenseNeuralNetwork {
 
             // If in verbose mode, update the terminal on every interval.
             if (verbose) {
-                printUpdateString(i, epoch, digitsInEpoch, testError);
+                printUpdateString(i, epoch, digitsInEpoch, testError, begin);
             }
         }
 
@@ -177,11 +180,13 @@ public class DenseNeuralNetwork {
      *                      trained
      * @param digitsInEpoch The amount of digits in the epoch integer
      * @param testError     The calculated error of the network with a test dataset.
+     * @param begin         The instant training started, will be used to calculate
+     *                      total time elapsed.
      */
-    private void printUpdateString(int i, int epoch, int digitsInEpoch, double testError) {
+    private void printUpdateString(int i, int epoch, int digitsInEpoch, double testError, Instant begin) {
         // Display an update if the current epoch is in the update interval, or it is
         // the first or last epoch.
-        if ((i + 1) % trainingUpdateInterval == 0 || i == 0 || i == epoch - 1) {
+        if ((i + 1) % trainingUpdateInterval == 0 || i == 0 || i == 99 || i == epoch - 1) {
             // Creates a string that will be output to the terminal.
             String updateString = new String();
 
@@ -197,7 +202,8 @@ public class DenseNeuralNetwork {
                         .concat(String.format("Progress: %04.1f%% | ", ((float) (i + 1) / epoch) * 100));
 
             // Stores the duration of epoch.
-            Duration duration = Duration.between(this.start, Instant.now());
+            Instant now = Instant.now();
+            Duration duration = Duration.between(this.start, now);
 
             // Adds the duration of interval of epochs training.
             updateString = updateString
@@ -222,6 +228,15 @@ public class DenseNeuralNetwork {
                     .concat(String.format("Est. Remaining: %dm %2ds | ",
                             timeRemaining.getSeconds() / 60,
                             timeRemaining.getSeconds() % 60));
+
+            // The time elapsed from starting training to now.
+            Duration timeElapsed = Duration.between(begin, now);
+
+            // Adds the time elapsed during training.
+            updateString = updateString
+                    .concat(String.format("Elapsed: %dm %2ds | ",
+                            timeElapsed.getSeconds() / 60,
+                            timeElapsed.getSeconds() % 60));
 
             System.out.println(updateString);
 
