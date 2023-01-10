@@ -75,7 +75,7 @@ public class Layer {
      * Number of neurons is the number of neurons in the layer, while activation is
      * the activation function on the layer.
      * 
-     * @return String representation of the layer
+     * @return String representation of the layer.
      */
     @Override
     public String toString() {

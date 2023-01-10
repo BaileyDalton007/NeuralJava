@@ -12,6 +12,7 @@ import com.github.baileydalton007.models.components.ErrorTensor;
 import com.github.baileydalton007.models.components.Layer;
 import com.github.baileydalton007.models.components.Neuron;
 import com.github.baileydalton007.models.components.WeightMatrix;
+import com.github.baileydalton007.utils.TextBox;
 
 /**
  * A class for Dense Neural Networks where every neuron in a layer is connected
@@ -76,28 +77,82 @@ public class DenseNeuralNetwork {
     /**
      * Overrides the model's toString method to return information on the model's
      * architecture.
+     * 
+     * @return String describing the network and its layers.
      */
     @Override
     public String toString() {
-        // Gets the number of weights in the network.
+        // Stores the strings containing layer information
+        StringBuilder layerStrings = new StringBuilder();
+
+        // Stores the total number of weights in the network.
         int numWeights = 0;
-        for (int i = 1; i < layerArray.length; i++) {
+        for (int i = 0; i < layerArray.length; i++) {
             // Add the number of neurons in this layer multiplied by the number of neurons
             // in the previous layer, giving the number of weights between the two layers.
-            numWeights += layerArray[i].size() * layerArray[i - 1].size();
+            // Checks if it is the first layer as it does not have any weights.
+            if (i > 0)
+                numWeights += layerArray[i].size() * layerArray[i - 1].size();
+
+            // Determines the current layer's type to be added to the string.
+            String layerType;
+            if (i == 0)
+                layerType = "input";
+            else if (i == layerArray.length - 1)
+                layerType = "output";
+            else
+                layerType = "hidden";
+
+            // Adds this layer's string to the layerStrings string containing all layers.
+            layerStrings.append(String.format("| Type: %7s " + layerArray[i].toString() + "\n", layerType));
         }
 
-        String output = new StringBuilder()
-                .append("Model Information \n")
-                .append("Type: Dense Neural Network \n")
-                .append(String.format("Input Size: %d \n", layerArray[0].size()))
-                .append(String.format("Output Size: %d \n", layerArray[layerArray.length - 1].size()))
-                .append(String.format("Number of Layers: %d \n", layerArray.length))
-                .append(String.format("Total Weights: %d \n", numWeights))
-                .append(String.format("Total Biases: %d \n", layerBiases.length))
-                .toString();
+        // Array of each line in the model information section that will be passed into
+        // the TextBox object to be padded and formatted.
+        String[] strArr = new String[] {
+                String.format("Model Information"),
+                String.format("Type: Dense Neural Network"),
+                String.format("Input Size: %d", layerArray[0].size()),
+                String.format("Output Size: %d", layerArray[layerArray.length - 1].size()),
+                String.format("Number of Layers: %d", layerArray.length),
+                String.format("Total Weights: %d", numWeights),
+                String.format("Total Biases: %d", layerBiases.length),
+                String.format("Layer Information")
+        };
 
-        return output;
+        // Stores the length of each line in the layer string.
+        // Every variable is padded so should stay constant;
+        final int LAYER_STRING_LENGTH = 68;
+
+        // TextBox object for formatting text and adding borders.
+        TextBox boxObject = new TextBox(strArr, LAYER_STRING_LENGTH);
+
+        // Creates a string builder to store the output.
+        StringBuilder output = new StringBuilder();
+
+        // Adds the First title (Model Information).
+        output.append(boxObject.getTopBox());
+        output.append(boxObject.getText(0));
+        output.append(boxObject.getBottom());
+
+        // Adds the model information.
+        output.append(boxObject.getText(1));
+        output.append(boxObject.getText(2));
+        output.append(boxObject.getText(3));
+        output.append(boxObject.getText(4));
+        output.append(boxObject.getText(5));
+        output.append(boxObject.getText(6));
+
+        // Adds the second title (Layer Information)
+        output.append(boxObject.getBottom());
+        output.append(boxObject.getText(7));
+        output.append(boxObject.getBottom());
+
+        // Adds the layer info to output.
+        output.append(layerStrings);
+        output.append(boxObject.getDividerBox(16, 42));
+
+        return output.toString();
     }
 
     /**
