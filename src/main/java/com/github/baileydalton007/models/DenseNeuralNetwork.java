@@ -201,15 +201,27 @@ public class DenseNeuralNetwork {
 
             // Adds the duration of interval of epochs training.
             updateString = updateString
-                    .concat(String.format("Time for Training Interval: %dm %2ds | ",
+                    .concat(String.format("Time Spent: %dm %2ds | ",
                             duration.getSeconds() / 60,
-                            duration.getSeconds()));
+                            duration.getSeconds() % 60));
 
             // Adds average training error.
             updateString = updateString.concat(String.format("Train Error: %10.3f | ", this.trainMeanSquaredError));
 
             // Adds test error.
             updateString = updateString.concat(String.format("Test Error: %10.3f | ", testError));
+
+            // Uses the time spent training each epoch in this interval to estimate how long
+            // the rest of training will take.
+            // Some algebraic rearranging has been done to minimize the amount of operations
+            // done on Duration.
+            Duration timeRemaining = duration.multipliedBy((epoch - (i + 1)) / trainingUpdateInterval);
+
+            // Adds the estimated time remaining in training.
+            updateString = updateString
+                    .concat(String.format("Est. Remaining: %dm %2ds | ",
+                            timeRemaining.getSeconds() / 60,
+                            timeRemaining.getSeconds() % 60));
 
             System.out.println(updateString);
 
@@ -318,7 +330,8 @@ public class DenseNeuralNetwork {
                 currNeuron.setInput(weightedSum);
             }
 
-            // Stores the layer's activations in the layer object for optimized access later.
+            // Stores the layer's activations in the layer object for optimized access
+            // later.
             currLayer.updateLayerActivations();
 
         }
