@@ -8,10 +8,10 @@ package com.github.baileydalton007.models.components;
  */
 public class ErrorTensor {
     // Stores the neuron error matrix.
-    private double[][] neuronErrors;
+    private final double[][] neuronErrors;
 
     // Stores the bias error array.
-    private double[] biasErrors;
+    private final double[] biasErrors;
 
     /**
      * Constructor for ErrorTensors.

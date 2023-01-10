@@ -21,17 +21,20 @@ public class Layer {
     private ActivationFunction activationFunction;
 
     // Storing the layer's current activations optimize run time.
-    // Instead of iterating through each neuron every time the layer's activations are needed, they will be stored and only updated when the activations change.
+    // Instead of iterating through each neuron every time the layer's activations
+    // are needed, they will be stored and only updated when the activations change.
     private double[] currActivations;
 
     /**
      * Constructor for a layer instance.
      * 
-     * @param numNeurons         The number of neurons that should make up the
-     *                           layer, must be 1 or more
-     * @param activationFunction The activation function that each neuron in the
-     *                           layer should use. For Rectified Linear Unit use
-     *                           "relu", for sigmoid use "sigmoid"
+     * @param numNeurons               The number of neurons that should make up the
+     *                                 layer, must be 1 or more
+     * @param activationFunctionString The activation function that each neuron in
+     *                                 the
+     *                                 layer should use. For Rectified Linear Unit
+     *                                 use
+     *                                 "relu", for sigmoid use "sigmoid"
      */
     public Layer(int numNeurons, String activationFunctionString) {
 
@@ -42,17 +45,18 @@ public class Layer {
         // Creates an array to store the neurons in the layer.
         neurons = new Neuron[numNeurons];
 
-        // Creates an array to store the activations of a layer between propagation cycles.
+        // Creates an array to store the activations of a layer between propagation
+        // cycles.
         currActivations = new double[numNeurons];
 
         // Sets the activation function based on the input string.
-        if (activationFunctionString.toLowerCase() == "relu")
+        if (activationFunctionString.toLowerCase().equals("relu"))
             activationFunction = new ReLUFunction();
 
-        else if (activationFunctionString.toLowerCase() == "sigmoid")
+        else if (activationFunctionString.toLowerCase().equals("sigmoid"))
             activationFunction = new SigmoidFunction();
 
-        else if (activationFunctionString.toLowerCase() == "softmax")
+        else if (activationFunctionString.toLowerCase().equals("softmax"))
             activationFunction = new SoftmaxFunction();
 
         else
@@ -76,7 +80,7 @@ public class Layer {
     }
 
     /**
-     *  Updates the layer's activations to be stored for optimization purposes. 
+     * Updates the layer's activations to be stored for optimization purposes.
      */
     public void updateLayerActivations() {
         this.currActivations = activationFunction.apply(getLayerInputs());
@@ -127,7 +131,6 @@ public class Layer {
 
         return inputs;
     }
-
 
     /**
      * Returns the neuron in a layer at a given index.
