@@ -64,4 +64,14 @@ public class SigmoidFunction extends ActivationFunction {
         return y * (1 - y);
     }
 
+    /**
+     * Returns "sigmoid", the name of the activation function.
+     * 
+     * @return String representation of the activation function
+     */
+    @Override
+    public String toString() {
+        return "sigmoid";
+    }
+
 }

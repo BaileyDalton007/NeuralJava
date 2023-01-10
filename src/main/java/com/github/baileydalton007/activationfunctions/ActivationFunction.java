@@ -37,4 +37,12 @@ public abstract class ActivationFunction implements Function<double[], double[]>
      * @return The output of the derivative function.
      */
     public abstract double derivative(double x);
+
+    /**
+     * Returns a string representation of the name of the activation function.
+     * 
+     * @return String name of the activation function.
+     */
+    @Override
+    public abstract String toString();
 }

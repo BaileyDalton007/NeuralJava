@@ -75,4 +75,14 @@ public class ReLUFunction extends ActivationFunction {
             return 0.0;
         return 1.0;
     }
+
+    /**
+     * Returns "relu", the name of the activation function.
+     * 
+     * @return String representation of the activation function
+     */
+    @Override
+    public String toString() {
+        return "relu";
+    }
 }
