@@ -74,6 +74,33 @@ public class DenseNeuralNetwork {
     }
 
     /**
+     * Overrides the model's toString method to return information on the model's
+     * architecture.
+     */
+    @Override
+    public String toString() {
+        // Gets the number of weights in the network.
+        int numWeights = 0;
+        for (int i = 1; i < layerArray.length; i++) {
+            // Add the number of neurons in this layer multiplied by the number of neurons
+            // in the previous layer, giving the number of weights between the two layers.
+            numWeights += layerArray[i].size() * layerArray[i - 1].size();
+        }
+
+        String output = new StringBuilder()
+                .append("Model Information \n")
+                .append("Type: Dense Neural Network \n")
+                .append(String.format("Input Size: %d \n", layerArray[0].size()))
+                .append(String.format("Output Size: %d \n", layerArray[layerArray.length - 1].size()))
+                .append(String.format("Number of Layers: %d \n", layerArray.length))
+                .append(String.format("Total Weights: %d \n", numWeights))
+                .append(String.format("Total Biases: %d \n", layerBiases.length))
+                .toString();
+
+        return output;
+    }
+
+    /**
      * Training method for the dense neural network model. Will adjust
      * weights/biases to minmize error between the input and target values.
      * 
@@ -170,6 +197,16 @@ public class DenseNeuralNetwork {
      */
     public int getTrainingUpdateInterval() {
         return this.trainingUpdateInterval;
+    }
+
+    /**
+     * Returns a string that describes the model's architecture.
+     * Call's the model's toString() method.
+     * 
+     * @return String describing the model.
+     */
+    public String info() {
+        return this.toString();
     }
 
     /**
