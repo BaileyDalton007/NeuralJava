@@ -1,18 +1,20 @@
 package com.github.baileydalton007.models;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.InputMismatchException;
 
 import com.github.baileydalton007.activationfunctions.ActivationFunction;
 import com.github.baileydalton007.exceptions.IncompatibleInputException;
+import com.github.baileydalton007.exceptions.ModelLoadingError;
 import com.github.baileydalton007.exceptions.NetworkTooSmallException;
 import com.github.baileydalton007.models.components.BiasUnit;
 import com.github.baileydalton007.models.components.ErrorTensor;
 import com.github.baileydalton007.models.components.Layer;
 import com.github.baileydalton007.models.components.Neuron;
 import com.github.baileydalton007.models.components.WeightMatrix;
-import com.github.baileydalton007.utils.JSONHandler;
 import com.github.baileydalton007.utils.TextBox;
 
 /**
@@ -74,6 +76,27 @@ public class DenseNeuralNetwork {
             layerBiases[i] = new BiasUnit();
         }
     }
+
+    /**
+     * Loads a model configuration from a JSON file.
+     * 
+     * @param fileName The name of the JSON file to load the model from
+     */
+    public DenseNeuralNetwork(String fileName) {
+        try {
+            // Handler will parse the data then use this model's setters to externally set
+            // the weights, layers, and biases.
+            JSONHandler.loadJSONFile(fileName, this);
+        } catch (ModelLoadingError e) {
+            throw e;
+        } catch (FileNotFoundException e) {
+            throw new ModelLoadingError(
+                    "Model file could not be found in this directory. Error Message: " + e.getMessage());
+
+        } catch (Exception e) {
+            throw new ModelLoadingError("Error loading model. Error Message: " + e.getMessage());
+        }
+    };
 
     /**
      * Overrides the model's toString method to return information on the model's
@@ -213,11 +236,11 @@ public class DenseNeuralNetwork {
     /**
      * Returns the model's output for a given inputs.
      * 
-     * @param input The input array to the network, should be the same size as the
-     *              input layer
+     * @param input The input array (or single value) to the network, should be the
+     *              same size as the input layer
      * @return The output of the network propagated from the input
      */
-    public double[] predict(double[] input) {
+    public double[] predict(double... input) {
         return forwardPropagation(input);
     }
 
@@ -271,7 +294,12 @@ public class DenseNeuralNetwork {
      * @param fileName The name of the output JSON file.
      */
     public void saveToFile(String fileName) {
-        JSONHandler.saveModelToJSONFile(layerArray, layerWeights, layerBiases, fileName);
+        try {
+            JSONHandler.saveModelToJSONFile(layerArray, layerWeights, layerBiases, fileName);
+        } catch (IOException e) {
+            throw new ModelLoadingError(
+                    "Could not create the JSON file in the current directory. Error Message: " + e.getMessage());
+        }
     }
 
     /**
@@ -781,5 +809,32 @@ public class DenseNeuralNetwork {
             // Updates the current bias based on the learning rate and that bias's error.
             currBias.setValue(currBias.getValue() + learningRate * errorArray[i]);
         }
+    }
+
+    /**
+     * Setter for the model's layer array.
+     * 
+     * @param The layer array to set the model's layer array to.
+     */
+    protected void setLayerArray(Layer[] layerArray) {
+        this.layerArray = layerArray;
+    }
+
+    /**
+     * Setter for the model's weight matrices.
+     * 
+     * @param The array of weight matrices to set the model's weight matrices to.
+     */
+    protected void setWeightMatrices(WeightMatrix[] weightMatrixArray) {
+        this.layerWeights = weightMatrixArray;
+    }
+
+    /**
+     * Setter for the model's bias array.
+     * 
+     * @param The bias array to set the model's bias array to.
+     */
+    protected void setBiasArray(BiasUnit[] biasArray) {
+        this.layerBiases = biasArray;
     }
 }

@@ -17,6 +17,15 @@ public class BiasUnit {
     }
 
     /**
+     * Constructor for a bias unit, initializes its value to the input value;
+     * 
+     * @param value The value that the bias should hold
+     */
+    public BiasUnit(double value) {
+        this.value = value;
+    }
+
+    /**
      * Getter for the bias unit's value.
      * 
      * @return The unit's value
