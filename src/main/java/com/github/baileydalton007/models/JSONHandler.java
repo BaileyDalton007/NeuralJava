@@ -190,6 +190,8 @@ public class JSONHandler {
         // Sets the model's bias array to be the biases configured in the JSON.
         model.setBiasArray(biasArray);
 
+        scanner.close();
+
     }
 
 }
