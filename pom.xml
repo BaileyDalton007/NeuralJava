@@ -21,6 +21,14 @@
     <jacoco.unit-tests.limit.method-complexity>5</jacoco.unit-tests.limit.method-complexity>
   </properties>
   <dependencies>
+
+  <!-- https://mvnrepository.com/artifact/org.json/json -->
+  <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20220924</version>
+  </dependency>
+
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
@@ -61,6 +69,11 @@
         <artifactId>maven-checkstyle-plugin</artifactId>
         <version>${maven-checkstyle-plugin.version}</version>
         <dependencies>
+          <dependency>  
+            <groupId>com.googlecode.json-simple</groupId>  
+            <artifactId>json-simple</artifactId>  
+            <version>1.1</version>  
+          </dependency>  
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
