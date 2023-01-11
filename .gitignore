@@ -14,5 +14,6 @@ buildNumber.properties
 .mvn/wrapper/maven-wrapper.jar
 .editorconfig
 
+*.json
 Maintest.java
 NeuralJava.jar
