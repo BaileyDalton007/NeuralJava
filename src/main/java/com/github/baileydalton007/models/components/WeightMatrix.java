@@ -1,5 +1,7 @@
 package com.github.baileydalton007.models.components;
 
+import java.util.Random;
+
 import com.github.baileydalton007.exceptions.IncompatibleInputException;
 import com.github.baileydalton007.exceptions.MatrixTooSmallException;
 
@@ -37,6 +39,12 @@ public class WeightMatrix {
             throw new MatrixTooSmallException();
 
         matrix = new double[numNeurons][prevNumNeurons];
+
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix.length; j++) {
+                matrix[i][j] = 1;
+            }
+        }
     }
 
     /**

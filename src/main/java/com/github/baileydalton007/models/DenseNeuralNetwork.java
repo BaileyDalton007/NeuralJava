@@ -342,9 +342,9 @@ public class DenseNeuralNetwork {
                             duration.getSeconds() % 60));
 
             // Adds average training error.
-            updateString = updateString.concat(String.format("Train Error: %10.3f | ", this.trainMeanSquaredError));
+            updateString = updateString.concat(String.format("Train Error: %f | ", this.trainMeanSquaredError));
 
-            // Adds test error.
+            // Adds test error. //"Test Error: %10.3f | "
             updateString = updateString.concat(String.format("Test Error: %10.3f | ", testError));
 
             // Uses the time spent training each epoch in this interval to estimate how long
@@ -647,7 +647,6 @@ public class DenseNeuralNetwork {
                         // where WEIGHTED_SUM is the input to the neuron, often denoted as the z term.
                         // where f'() is the derivative of the neuron's activation function.
                         // layerIndex - 1 since input layer is not included.
-
                         neuronErrorSum[layerIndex
                                 - 1][neuronIndex] = neuronError[layerIndex
                                         - 1][neuronIndex] = derivativeTerms[neuronIndex]
