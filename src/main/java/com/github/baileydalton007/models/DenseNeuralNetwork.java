@@ -12,6 +12,7 @@ import com.github.baileydalton007.models.components.ErrorTensor;
 import com.github.baileydalton007.models.components.Layer;
 import com.github.baileydalton007.models.components.Neuron;
 import com.github.baileydalton007.models.components.WeightMatrix;
+import com.github.baileydalton007.utils.JSONHandler;
 import com.github.baileydalton007.utils.TextBox;
 
 /**
@@ -262,6 +263,15 @@ public class DenseNeuralNetwork {
      */
     public String info() {
         return this.toString();
+    }
+
+    /**
+     * Saves the model's architecture and weight's / biases to a JSON file.
+     * 
+     * @param fileName The name of the output JSON file.
+     */
+    public void saveToFile(String fileName) {
+        JSONHandler.saveModelToJSONFile(layerArray, layerWeights, layerBiases, fileName);
     }
 
     /**

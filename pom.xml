@@ -22,12 +22,12 @@
   </properties>
   <dependencies>
 
-  <!-- https://mvnrepository.com/artifact/org.json/json -->
-  <dependency>
-      <groupId>org.json</groupId>
-      <artifactId>json</artifactId>
-      <version>20220924</version>
-  </dependency>
+    <!-- https://mvnrepository.com/artifact/org.json/json -->
+    <dependency>
+        <groupId>org.json</groupId>
+        <artifactId>json</artifactId>
+        <version>20220924</version>
+    </dependency>
 
     <dependency>
       <groupId>org.junit.jupiter</groupId>
