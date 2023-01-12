@@ -1,7 +1,5 @@
 package com.github.baileydalton007.models.components;
 
-import java.util.Random;
-
 import com.github.baileydalton007.exceptions.IncompatibleInputException;
 import com.github.baileydalton007.exceptions.MatrixTooSmallException;
 

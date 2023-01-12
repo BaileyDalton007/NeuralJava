@@ -9,6 +9,8 @@ package com.github.baileydalton007.exceptions;
 public class UnknownActivationFunction extends RuntimeException {
     /**
      * Constructor for a UnknownActivationFunction.
+     * 
+     * @param The message that will be output to the user
      */
     public UnknownActivationFunction(String message) {
         super(message);

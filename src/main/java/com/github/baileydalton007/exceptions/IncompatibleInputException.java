@@ -9,6 +9,8 @@ package com.github.baileydalton007.exceptions;
 public class IncompatibleInputException extends RuntimeException {
     /**
      * Constructor for a IncompatibleInputException.
+     * 
+     * @param message The message that will be output to the user.
      */
     public IncompatibleInputException(String message) {
         super(message);
