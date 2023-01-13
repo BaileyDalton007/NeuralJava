@@ -109,6 +109,23 @@ public class TensorOperations {
     }
 
     /**
+     * Sums all the elements in the input array.
+     * 
+     * @param vec The array that will have all its elements summed
+     * @return The sum of all of the input array's elements
+     */
+    public static double sumElements(double[] vec) {
+        double output = 0.0;
+
+        // Iterates through each element in vec and adds it to the sum.
+        for (int i = 0; i < vec.length; i++) {
+            output += vec[i];
+        }
+
+        return output;
+    }
+
+    /**
      * Multiplies two arrays of the same length together and returns an array of the
      * products.
      * 

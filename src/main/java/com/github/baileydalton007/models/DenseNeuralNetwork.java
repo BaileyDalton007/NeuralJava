@@ -42,7 +42,7 @@ public class DenseNeuralNetwork {
     // training.
     private int trainingUpdateInterval = 1;
 
-    // The model's current mean squared error while training.
+    // The model's current loss while training.
     private double trainMeanSquaredError;
 
     /**
@@ -614,6 +614,22 @@ public class DenseNeuralNetwork {
 
                 // If this layer is the network's output layer.
                 if (layerIndex == layerArray.length - 1) {
+
+                    // Stores the sum for the layer's error to be used to calculate the model's
+                    // training error.
+                    double meanSquaredErrorSum = 0.0;
+
+                    // MSE = SUM(|ai - yi| ^ 2) / NEURONS_IN_OUTPUT
+                    // Mean squared error calculation.
+                    // Where ai is the activation of output neuron i.
+                    // Where yi is the target activation of output neuron i.
+                    meanSquaredErrorSum += Math
+                            .pow(TensorOperations.sumElements(currLayer.getLayerActivations())
+                                    - TensorOperations.sumElements(targets[inputIndex]), 2);
+
+                    // Averages the training mean squared error for the output layer.
+                    this.trainMeanSquaredError = meanSquaredErrorSum / currLayer.size();
+
                     // Calculates the output layer's loss.
                     neuronError = SumSquareResidual.loss(currLayer, null, targets[inputIndex], true);
 
