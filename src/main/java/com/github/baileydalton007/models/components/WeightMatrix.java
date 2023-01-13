@@ -40,7 +40,7 @@ public class WeightMatrix {
 
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[i].length; j++) {
-                matrix[i][j] = 1;
+                matrix[i][j] = 0.1;
             }
         }
     }
@@ -78,26 +78,26 @@ public class WeightMatrix {
     }
 
     /**
-     * Adds the input matrix to this matrix.
-     * Matrices must be the same shape to add.
+     * Subtracts the input matrix from this matrix.
+     * Matrices must be the same shape to subtract.
      * 
-     * @param input WeightMatrix of the same shape as this matrix to add
+     * @param input WeightMatrix of the same shape as this matrix to subtract
      */
-    public void add(WeightMatrix input) {
-        // Stores the matrices to add.
+    public void subtract(WeightMatrix input) {
+        // Stores the matrices to subtract.
         double[][] m1 = this.getMatrix();
         double[][] m2 = input.getMatrix();
 
         // Checks if the two matrices are the same shape.
         if (m1.length != m2.length || m1[0].length != m2[0].length)
-            throw new IncompatibleInputException("Weight Matrices must have the same dimensions to add together");
+            throw new IncompatibleInputException("Weight Matrices must have the same dimensions to subtract");
 
         // Iterates through each row of the matrix.
         for (int i = 0; i < m1.length; i++) {
 
-            // Iterates through each column of the matrix adding the elements.
+            // Iterates through each column of the matrix subtracting the elements.
             for (int j = 0; j < m1[0].length; j++) {
-                m1[i][j] += m2[i][j];
+                m1[i][j] -= m2[i][j];
             }
         }
 

@@ -6,15 +6,16 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.InputMismatchException;
 
-import com.github.baileydalton007.activationfunctions.ActivationFunction;
 import com.github.baileydalton007.exceptions.IncompatibleInputException;
 import com.github.baileydalton007.exceptions.ModelLoadingError;
 import com.github.baileydalton007.exceptions.NetworkTooSmallException;
+import com.github.baileydalton007.lossFunctions.SumSquareResidual;
 import com.github.baileydalton007.models.components.BiasUnit;
 import com.github.baileydalton007.models.components.ErrorTensor;
 import com.github.baileydalton007.models.components.Layer;
 import com.github.baileydalton007.models.components.Neuron;
 import com.github.baileydalton007.models.components.WeightMatrix;
+import com.github.baileydalton007.utils.TensorOperations;
 import com.github.baileydalton007.utils.TextBox;
 
 /**
@@ -541,26 +542,23 @@ public class DenseNeuralNetwork {
 
         // Unpacks the neuron error matrix from the error tensor.
         // The first index for layer L is (L-1) since the input layer is not included.
-        double[][] neuronErrorMatrix = errorTensor.getNeuronErrors();
+        // double[][] neuronErrorMatrix = errorTensor.getNeuronErrors();
+        double[][][] weightErrors = errorTensor.getWeightErrors();
 
         // Unpacks the bias error array from the error tensor.
         // The first index for layer L is (L-1) since the input layer is not included.
         double[] biasErrorArray = errorTensor.getBiasErrors();
 
-        // An array of weight matrices denoting the amount and direction which
-        // each weight should be adjusted. Will be added to the network's array
-        // of weight matrices to tune the network.
-        WeightMatrix[] deltaWeights = getWeightAdjustments(learningRate, neuronErrorMatrix);
-
-        // Iterates through each layer of weights, and updating them according to the
-        // delta values.
         for (int layerIndex = 1; layerIndex < layerArray.length; layerIndex++) {
-            this.layerWeights[layerIndex - 1].add(deltaWeights[layerIndex - 1]);
+            double[][] currWeights = this.layerWeights[layerIndex - 1].getMatrix();
+            double[][] deltaWeights = TensorOperations.multiplyByValue(weightErrors[layerIndex - 1], learningRate);
+
+            this.layerWeights[layerIndex - 1].setMatrix(TensorOperations.subtractElements(currWeights, deltaWeights));
         }
 
         // Adjusts the model's biases for each layer based on the propagated error and
         // learning rate.
-        adjustBiases(biasErrorArray, learningRate);
+        // adjustBiases(biasErrorArray, learningRate);
     }
 
     /**
@@ -585,210 +583,116 @@ public class DenseNeuralNetwork {
      *         input layer).
      */
     private ErrorTensor propagateErrorTensor(double[][] inputs, double[][] targets) {
-        // Creates a matrix to store the sum of all training example's errors for each
-        // neuron.
-        double[][] neuronErrorSum = new double[layerArray.length - 1][];
+        // Creates a 3D tensor that will hold the sum of all the errors for each weight.
+        double[][][] weightErrorSums = new double[layerArray.length - 1][][];
 
-        // Creates an array to store the sum of all training example's errors for each
-        // bias.
-        double[] biasErrorSum = new double[layerArray.length - 1];
+        // Initializes the weightErrorSums tensor as the same size as each weight matrix
+        // in each layer.
+        for (int i = 1; i < layerArray.length; i++) {
+            weightErrorSums[i - 1] = new double[layerArray[i].size()][layerArray[i - 1].size()];
+        }
 
-        // Iterates through all the training examples to calculate the sum error for the
-        // training examples.
+        // Iterates through each input example, and sums up the error for all of them.
         for (int inputIndex = 0; inputIndex < inputs.length; inputIndex++) {
-
-            // Propagates the network forward with the given inputs to activate the
-            // network's neurons.
             forwardPropagation(inputs[inputIndex]);
 
-            // Creates a matrix to store each neuron's error.
-            // Amount of errors - 1 since input layer is not included.
-            double[][] neuronError = new double[layerArray.length - 1][];
+            // Will store the errors in the previous iteration (the layer in front of this
+            // one because we iterate backward).
+            double[] prevIterationErrors = new double[0];
 
-            // Creates an array to store each layer's bias's error.
-            // Amount of errors - 1 since input layer is not included.
-            double[] biasError = new double[layerArray.length - 1];
-
-            // Iterates backward through the netowrk's layers.
-            // Does not include the input layer as the error is not needed.
+            // Iterates through each layer backward propagating error.
             for (int layerIndex = layerArray.length - 1; layerIndex > 0; layerIndex--) {
-
-                // Stores the current layer that will have its error calculated.
                 Layer currLayer = layerArray[layerIndex];
+                Layer prevLayer = layerArray[layerIndex - 1];
 
-                // Stores the current layer's activation function.
-                ActivationFunction activationFunction = currLayer.getActivationFunction();
+                // Stores the activations for the previous layer to be used to calculate each
+                // weight's error.
+                double[] prevActivations = prevLayer.getLayerActivations();
 
-                // Creates a row in the matrices with the amount of columns needed to store the
-                // error for each neuron in the layer.
-                // layerIndex - 1 since input layer is not included.
-                neuronError[layerIndex - 1] = new double[currLayer.size()];
-                neuronErrorSum[layerIndex - 1] = new double[currLayer.size()];
+                // Array that will store the error in each neuron.
+                double[] neuronError = new double[currLayer.size()];
 
-                // Stores the activations for the current layer.
-                double[] activations = currLayer.getLayerActivations();
-
-                // Calculates the derivative terms for the error calculations below. Represented
-                // as f'(WEIGHTED_SUMS)
-                double[] derivativeTerms = activationFunction.derivative(currLayer.getLayerInputs());
-
-                // Checks if the current layer is the output layer to use different error
-                // calculation.
+                // If this layer is the network's output layer.
                 if (layerIndex == layerArray.length - 1) {
+                    // Calculates the output layer's loss.
+                    neuronError = SumSquareResidual.loss(currLayer, null, targets[inputIndex], true);
 
-                    // Stores the sum for the layer's error to be used to calculate the model's
-                    // training error.
-                    double meanSquaredErrorSum = 0.0;
-
-                    // Iterates through neurons in current (output) layer to calculate error for
-                    // each.
-                    for (int neuronIndex = 0; neuronIndex < currLayer.size(); neuronIndex++) {
-                        // ERROR = f'(WEIGHTED_SUM) * (TRUTH - ACTIVATION)
-                        // where WEIGHTED_SUM is the input to the neuron, often denoted as the z term.
-                        // where f'() is the derivative of the neuron's activation function.
-                        // layerIndex - 1 since input layer is not included.
-                        neuronErrorSum[layerIndex
-                                - 1][neuronIndex] = neuronError[layerIndex
-                                        - 1][neuronIndex] = derivativeTerms[neuronIndex]
-                                                * (targets[inputIndex][neuronIndex] - activations[neuronIndex]);
-
-                        // BIAS_ERROR = SUM_FOR_NEURONS_IN_LAYER(f'(BIAS_VALUE) * (TRUTH - ACTIVATION))
-                        // where f'() is the derivative of the layer's activation function.
-                        // layerIndex - 1 since input layer does not have a bias.
-                        biasErrorSum[layerIndex - 1] = biasError[layerIndex - 1] += activationFunction
-                                .derivative(layerBiases[layerIndex - 1].getValue())
-                                * (targets[inputIndex][neuronIndex] - activations[neuronIndex]);
-
-                        // MSE = SUM(|ai - yi| ^ 2) / NEURONS_IN_OUTPUT
-                        // Mean squared error calculation.
-                        // Where ai is the activation of output neuron i.
-                        // Where yi is the target activation of output neuron i.
-                        // Here sums the errors to be divided after the loop.
-                        meanSquaredErrorSum += Math.pow((activations[neuronIndex] - targets[inputIndex][neuronIndex]),
-                                2);
-                    }
-
-                    // Averages the training mean squared error for the output layer.
-                    this.trainMeanSquaredError = meanSquaredErrorSum / currLayer.size();
+                    // Stores this error for calculations in the next iteration.
+                    prevIterationErrors = neuronError;
 
                 } else {
-                    // If this layer is not an output layer.
+                    // Will Store the sum of errors from the next layer.
+                    double[] nextLayerErrorSums = new double[currLayer.size()];
 
-                    // Iterates through neurons in current (hidden) layer to calculate error for
-                    // each.
-                    for (int neuronIndex = 0; neuronIndex < currLayer.size(); neuronIndex++) {
-                        // Stores the sum of the errors and weights in the next layer.
-                        double errSum = 0.0;
-
-                        // Iterates through each neuron, adding the product of the error and the weight
-                        // connecting it to the current neuron to the sum.
-                        for (int k = 0; k < layerArray[layerIndex + 1].size(); k++) {
-                            // layerIndex + 1 - 1 for the next layer's errors since input layer is not
-                            // included (for both error and weight matrices).
-                            errSum += neuronError[layerIndex][k] * layerWeights[layerIndex].getMatrix()[k][neuronIndex];
+                    // Iterates through the neurons in the current error getting their error sums.
+                    for (int i = 0; i < currLayer.size(); i++) {
+                        // Iterates through the neurons in the next layer adding up their errors
+                        // multiplied by the weight connecting them to the current neuron.
+                        for (int j = 0; j < layerArray[layerIndex + 1].size(); j++) {
+                            nextLayerErrorSums[i] += prevIterationErrors[j]
+                                    * layerWeights[layerIndex].getMatrix()[j][i];
                         }
-
-                        // ERROR = f'(WEIGHTED_SUM) * (ERROR_SUM)
-                        // where WEIGHTED_SUM is the input to the neuron, often denoted as the z term.
-                        // Where f'() is the derivative of the neuron's activation function.
-                        // And ERROR_SUM is the sum of the products of all the errors and weights in the
-                        // next layer.
-                        // layerIndex - 1 since input layer is not included.
-                        neuronError[layerIndex - 1][neuronIndex] = derivativeTerms[neuronIndex] * errSum;
-
-                        // Adds the above neuron's error to the error sum array.
-                        neuronErrorSum[layerIndex - 1][neuronIndex] += neuronError[layerIndex - 1][neuronIndex];
-
-                        // BIAS_ERROR = SUM_FOR_NEURONS_IN_LAYER(f'(BIAS_VALUE) * NEURON_ERROR)
-                        // where f'() is the derivative of the layer's activation function.
-                        // layerIndex - 1 since input layer does not have a bias.
-                        biasError[layerIndex - 1] += activationFunction
-                                .derivative(layerBiases[layerIndex - 1].getValue())
-                                * neuronError[layerIndex - 1][neuronIndex];
-
-                        // Adds the above bias unit's error to the error sum array.
-                        biasErrorSum[layerIndex - 1] += biasError[layerIndex - 1];
                     }
+
+                    // Calculates this hidden layer's loss.
+                    neuronError = SumSquareResidual.loss(currLayer, nextLayerErrorSums, targets[inputIndex], false);
+
+                    // Stores this error for calculations in the next iteration.
+                    prevIterationErrors = neuronError;
                 }
+
+                // Gets the influnce of the previous layer's neurons to calculate the error in
+                // the weights that connect the previous layer to this layer.
+                double[][] previousLayerInfluence = previousLayerInfluence(currLayer.size(), prevActivations,
+                        layerWeights[layerIndex - 1].getMatrix());
+
+                // Multiplies each weight's influence by its neuron's error.
+                double[][] weightErr = TensorOperations.multiplyRowsByVector(neuronError, previousLayerInfluence);
+
+                // Adds this input's weight errors to the summation to be averaged over all
+                // inputs.
+                weightErrorSums[layerIndex - 1] = TensorOperations.addElements(weightErrorSums[layerIndex - 1],
+                        weightErr);
             }
         }
 
-        // Divide the sums of each bias's error by the number of inputs.
-        // This array is the average error for each bias in the network.
-        for (int i = 0; i < biasErrorSum.length; i++) {
-            biasErrorSum[i] = biasErrorSum[i] / inputs.length;
-        }
+        // Averages the weight errors over all inputs.
+        weightErrorSums = TensorOperations.divideByValue(weightErrorSums, inputs.length);
 
-        // Divide the sums of each neuron's error by the number of inputs.
-        // This matrix is the average error for each neuron in the network.
-        for (int i = 0; i < neuronErrorSum.length; i++) {
-            for (int j = 0; j < neuronErrorSum[i].length; j++) {
-                neuronErrorSum[i][j] = neuronErrorSum[i][j] / inputs.length;
-            }
-        }
-
-        // Pack the neuron average error matrix and the bias average error array into an
-        // error tensor.
-        return new ErrorTensor(neuronErrorSum, biasErrorSum);
+        return new ErrorTensor(weightErrorSums, null);
     }
 
     /**
-     * Uses the error for each neuron in the network to calculate the appropriate
-     * change to make to each weight, and returns a array of (delta) weight matrices
-     * that can be added to the network's current array of weight matrices.
+     * Multiplies each of the activations in the previous layer by the weights that
+     * connects them to the current layer.
      * 
-     * @param learningRate The relativea mount which the network will adjust
-     *                     weights. Suggested to be around 1.0.
-     * @param errorMatrix  The matrix denoting the error in each neuron, calculated
-     *                     from propagateErrorMatrix.
-     * @return An array of weight matrices denoting the amount and direction which
-     *         each weight should be adjusted. Will be added to the network's array
-     *         of weight matrices to tune the network.
+     * @param currNumNeurons      The number of neurons in the current layer
+     * @param previousActivations The activations of the previous layer
+     * @param weights             The weights that connect this layer to the
+     *                            previous layer
+     * @return A matrix the size of the layer's weight matrix where each value is
+     *         the neuron's from the previous layer's activation multiplied by the
+     *         weight connecting the previous neuron to the current neuron.
      */
-    private WeightMatrix[] getWeightAdjustments(double learningRate, double[][] errorMatrix) {
-        // Array to store the changes to each weight calculated from the errors.
-        WeightMatrix[] deltaWeights = new WeightMatrix[layerArray.length - 1];
+    private double[][] previousLayerInfluence(int currNumNeurons, double[] previousActivations, double[][] weights) {
+        double[][] output = new double[currNumNeurons][];
 
-        // Iterates backward through the netowrk's layers.
-        // Does not include the input layer as the error is not needed.
-        for (int layerIndex = layerArray.length - 1; layerIndex > 0; layerIndex--) {
-            // Stores the current layer.
-            Layer currLayer = layerArray[layerIndex];
+        // Interates through each neuron in the current layer.
+        for (int currNeuronIndex = 0; currNeuronIndex < currNumNeurons; currNeuronIndex++) {
+            // Creates a row for each neuron in the current layer.
+            output[currNeuronIndex] = new double[previousActivations.length];
 
-            // Stores the previous layer.
-            Layer prevLayer = layerArray[layerIndex - 1];
+            // Iterates through each neuron in the previous layer
+            for (int prevNeuronIndex = 0; prevNeuronIndex < previousActivations.length; prevNeuronIndex++) {
 
-            // Creates a weight matrix that will store this layer's changes to the weights.
-            deltaWeights[layerIndex - 1] = new WeightMatrix(currLayer.size(), prevLayer.size());
-
-            // A 2D array that will store the changes to the weights before adding them to
-            // the weight matrix.
-            double[][] deltaW = new double[currLayer.size()][prevLayer.size()];
-
-            // Stores the activations of the previous layer.
-            double[] prevActivations = prevLayer.getLayerActivations();
-
-            // Iterates through each neuron in the current layer.
-            for (int neuronIndex = 0; neuronIndex < currLayer.size(); neuronIndex++) {
-
-                // Iterates through each neuron in the previous layer.
-                // Calculates the change that should be applied to the weight connecting the
-                // current neuron to the previous neuron (k-th neuron), and stores it in the 2D
-                // array.
-                for (int k = 0; k < prevLayer.size(); k++) {
-                    // DELTA_W = LEARNING_RATE * (CURR_NEURON_ERROR) *
-                    // (ACTIVATION_OF_PREVIOUS_NEURON)
-                    deltaW[neuronIndex][k] = learningRate * errorMatrix[layerIndex - 1][neuronIndex]
-                            * prevActivations[k];
-                }
+                // Multiplies the previous neuron's activation by the weight that connects it to
+                // this layer and stores it in the matrix.
+                output[currNeuronIndex][prevNeuronIndex] = previousActivations[prevNeuronIndex]
+                        * weights[currNeuronIndex][prevNeuronIndex];
             }
-
-            // Sets the layer's delta weight matrix to the 2D array storing the delta w
-            // values.
-            deltaWeights[layerIndex - 1].setMatrix(deltaW);
         }
 
-        return deltaWeights;
+        return output;
     }
 
     /**
