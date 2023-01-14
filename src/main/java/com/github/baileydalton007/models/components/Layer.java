@@ -1,6 +1,7 @@
 package com.github.baileydalton007.models.components;
 
 import com.github.baileydalton007.activationfunctions.ActivationFunction;
+import com.github.baileydalton007.activationfunctions.LinearFunction;
 import com.github.baileydalton007.activationfunctions.ReLUFunction;
 import com.github.baileydalton007.activationfunctions.SigmoidFunction;
 import com.github.baileydalton007.activationfunctions.SoftmaxFunction;
@@ -59,6 +60,8 @@ public class Layer {
         else if (activationFunctionString.toLowerCase().equals("softmax"))
             activationFunction = new SoftmaxFunction();
 
+        else if (activationFunctionString.toLowerCase().equals("linear"))
+            activationFunction = new LinearFunction();
         else
             // If the function is unknown, throw an exception.
             throw new UnknownActivationFunction(activationFunctionString
