@@ -1,6 +1,7 @@
 package com.github.baileydalton007.lossFunctions;
 
 import com.github.baileydalton007.models.components.Layer;
+import com.github.baileydalton007.activationfunctions.ActivationFunction;
 
 /**
  * Loss function class that describles the sum squared residual loss function.
@@ -46,5 +47,32 @@ public class SumSquareResidual extends lossFunction {
             }
         }
         return output;
+    }
+
+    public static double lossBias(double[] neuronLoss, double biasValue, double[] target, Layer currLayer,
+            boolean outputLayer) {
+
+        double errorSum = 0.0;
+
+        if (outputLayer) {
+            double[] activations = currLayer.getLayerActivations();
+
+            // Iterates thought the output neurons, summing the differences between the
+            // activations and the target values.
+            for (int i = 0; i < currLayer.size(); i++) {
+                errorSum += activations[i] - target[i];
+            }
+
+        } else {
+
+            // Sums all the errors in the neurons in the current layer.
+            for (int i = 0; i < neuronLoss.length; i++) {
+                errorSum += neuronLoss[i];
+            }
+
+        }
+
+        return currLayer.getActivationFunction().derivative(biasValue) * errorSum;
+
     }
 }

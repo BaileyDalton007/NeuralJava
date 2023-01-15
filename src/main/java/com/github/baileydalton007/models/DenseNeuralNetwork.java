@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.InputMismatchException;
 
+import com.github.baileydalton007.activationfunctions.ActivationFunction;
 import com.github.baileydalton007.exceptions.IncompatibleInputException;
 import com.github.baileydalton007.exceptions.ModelLoadingError;
 import com.github.baileydalton007.exceptions.NetworkTooSmallException;
@@ -542,13 +543,13 @@ public class DenseNeuralNetwork {
 
         // Unpacks the neuron error matrix from the error tensor.
         // The first index for layer L is (L-1) since the input layer is not included.
-        // double[][] neuronErrorMatrix = errorTensor.getNeuronErrors();
         double[][][] weightErrors = errorTensor.getWeightErrors();
 
         // Unpacks the bias error array from the error tensor.
         // The first index for layer L is (L-1) since the input layer is not included.
         double[] biasErrorArray = errorTensor.getBiasErrors();
 
+        // Iterates through each layer adjusting the weights according to the errors.
         for (int layerIndex = 1; layerIndex < layerArray.length; layerIndex++) {
             double[][] currWeights = this.layerWeights[layerIndex - 1].getMatrix();
             double[][] deltaWeights = TensorOperations.multiplyByValue(weightErrors[layerIndex - 1], learningRate);
@@ -558,7 +559,7 @@ public class DenseNeuralNetwork {
 
         // Adjusts the model's biases for each layer based on the propagated error and
         // learning rate.
-        // adjustBiases(biasErrorArray, learningRate);
+        adjustBiases(biasErrorArray, learningRate);
     }
 
     /**
@@ -585,6 +586,9 @@ public class DenseNeuralNetwork {
     private ErrorTensor propagateErrorTensor(double[][] inputs, double[][] targets) {
         // Creates a 3D tensor that will hold the sum of all the errors for each weight.
         double[][][] weightErrorSums = new double[layerArray.length - 1][][];
+
+        // Creates an array that will store the sums of all errors for each bias.
+        double[] biasErrorSums = new double[layerArray.length - 1];
 
         // Initializes the weightErrorSums tensor as the same size as each weight matrix
         // in each layer.
@@ -636,6 +640,10 @@ public class DenseNeuralNetwork {
                     // Stores this error for calculations in the next iteration.
                     prevIterationErrors = neuronError;
 
+                    // Calculates the error the bias in this layer.
+                    biasErrorSums[layerIndex - 1] = SumSquareResidual.lossBias(neuronError,
+                            layerBiases[layerIndex - 1].getValue(), targets[inputIndex], currLayer, true);
+
                 } else {
                     // Will Store the sum of errors from the next layer.
                     double[] nextLayerErrorSums = new double[currLayer.size()];
@@ -655,6 +663,10 @@ public class DenseNeuralNetwork {
 
                     // Stores this error for calculations in the next iteration.
                     prevIterationErrors = neuronError;
+
+                    // Calculates the error the bias in this layer.
+                    biasErrorSums[layerIndex - 1] = SumSquareResidual.lossBias(neuronError,
+                            layerBiases[layerIndex - 1].getValue(), targets[inputIndex], currLayer, false);
                 }
 
                 // Gets the influnce of the previous layer's neurons to calculate the error in
@@ -675,7 +687,7 @@ public class DenseNeuralNetwork {
         // Averages the weight errors over all inputs.
         weightErrorSums = TensorOperations.divideByValue(weightErrorSums, inputs.length);
 
-        return new ErrorTensor(weightErrorSums, null);
+        return new ErrorTensor(weightErrorSums, biasErrorSums);
     }
 
     /**
