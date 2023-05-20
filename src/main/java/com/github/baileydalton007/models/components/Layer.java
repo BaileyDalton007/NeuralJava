@@ -1,5 +1,7 @@
 package com.github.baileydalton007.models.components;
 
+import java.net.ProtocolException;
+
 import com.github.baileydalton007.activationfunctions.ActivationFunction;
 import com.github.baileydalton007.activationfunctions.LinearFunction;
 import com.github.baileydalton007.activationfunctions.ReLUFunction;
@@ -11,7 +13,7 @@ import com.github.baileydalton007.exceptions.UnknownActivationFunction;
 
 /**
  * Class for layers that make up neural networks.
- * 
+ *
  * @author Bailey Dalton
  */
 public class Layer {
@@ -26,9 +28,15 @@ public class Layer {
     // are needed, they will be stored and only updated when the activations change.
     private double[] currActivations;
 
+
+    // Stores the layer before and after this layer in the network.
+    private Layer nextLayer;
+    private Layer prevLayer;
+
+
     /**
      * Constructor for a layer instance.
-     * 
+     *
      * @param numNeurons               The number of neurons that should make up the
      *                                 layer, must be 1 or more
      * @param activationFunctionString The activation function that each neuron in
@@ -77,7 +85,7 @@ public class Layer {
      * Returns a string describing the layer.
      * Number of neurons is the number of neurons in the layer, while activation is
      * the activation function on the layer.
-     * 
+     *
      * @return String representation of the layer.
      */
     @Override
@@ -90,7 +98,7 @@ public class Layer {
 
     /**
      * Returns an array of the activations of the neurons in the layer.
-     * 
+     *
      * @return Array of activations of the neurons in the layer.
      */
     public double[] getLayerActivations() {
@@ -106,7 +114,7 @@ public class Layer {
 
     /**
      * Getter for the amount of neurons in a layer.
-     * 
+     *
      * @return The amount of neurons in a layer
      */
     public int size() {
@@ -115,7 +123,7 @@ public class Layer {
 
     /**
      * Inputs an array of inputs to the layer of neurons.
-     * 
+     *
      * @param input Array of inputs
      * @throws IncompatibleInputException Thrown if the size of input does not match
      *                                    the size of the layer.
@@ -135,7 +143,7 @@ public class Layer {
     /**
      * Getter for this layer's neurons inputs. Used to calculate the activations for
      * the layer.
-     * 
+     *
      * @return Array of inputs to each neuron in the layer
      */
     public double[] getLayerInputs() {
@@ -152,7 +160,7 @@ public class Layer {
 
     /**
      * Returns the neuron in a layer at a given index.
-     * 
+     *
      * @param index The index of the neuron that should be accessed
      * @return The neuron in the layer at the passed in index
      */
@@ -162,11 +170,42 @@ public class Layer {
 
     /**
      * A getter for a layer's activation function.
-     * 
+     *
      * @return This layer's activation function object
      */
     public ActivationFunction getActivationFunction() {
         return this.activationFunction;
     }
 
+    /**
+     * Sets the next layer to the input.
+     * @param l the layer after this in the network
+     */
+    public void setNextLayer(Layer l) {
+        this.nextLayer = l;
+    }
+
+
+    /**
+     * Sets the prior layer to the input.
+     * @param l the layer before this in the network
+     */
+    public void setPreviousLayer(Layer l) {
+        this.prevLayer = l;
+    }
+
+
+    /**
+     * Returns the layer following this one in the network
+     */
+    public Layer next() {
+        return this.nextLayer;
+    }
+
+    /**
+     * Returns the layer before this one in the network
+     */
+    public Layer prev() {
+        return this.prevLayer;
+    }
 }

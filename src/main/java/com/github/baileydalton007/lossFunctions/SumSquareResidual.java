@@ -1,10 +1,9 @@
 package com.github.baileydalton007.lossFunctions;
 
 import com.github.baileydalton007.models.components.Layer;
-import com.github.baileydalton007.activationfunctions.ActivationFunction;
 
 /**
- * Loss function class that describles the sum squared residual loss function.
+ * Loss function class that describes the sum squared residual loss function.
  * 
  * @author Bailey Dalton
  */

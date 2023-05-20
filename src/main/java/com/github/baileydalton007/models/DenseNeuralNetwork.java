@@ -6,7 +6,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.InputMismatchException;
 
-import com.github.baileydalton007.activationfunctions.ActivationFunction;
 import com.github.baileydalton007.exceptions.IncompatibleInputException;
 import com.github.baileydalton007.exceptions.ModelLoadingError;
 import com.github.baileydalton007.exceptions.NetworkTooSmallException;
@@ -59,6 +58,20 @@ public class DenseNeuralNetwork {
             throw new NetworkTooSmallException();
 
         this.layerArray = layerArray;
+
+        // Configures each layer's next and prev navigation.
+        for (int i = 0; i < layerArray.length; i++) {
+            if (i == 0)
+                this.layerArray[i].setPreviousLayer(null);
+            else
+                this.layerArray[i].setPreviousLayer(layerArray[i-1]);
+        
+        
+            if (i == layerArray.length-1)
+                this.layerArray[i].setNextLayer(null);
+            else
+                this.layerArray[i].setNextLayer(layerArray[i+1]);
+        }
 
         // Weight matrix array will be the same size as the amount of layers minus one
         // as the input layer layer will not have a weight matrix.
